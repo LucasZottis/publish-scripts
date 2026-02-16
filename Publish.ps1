@@ -19,6 +19,11 @@ if ($currentBranch -ne "main") {
 }
 git pull
 
+# 5️⃣ Build + Test
+dotnet restore
+dotnet build -c Release
+dotnet test
+
 # 3️⃣ Pega última tag
 $lastTag = git describe --tags --abbrev=0 2>$null
 if (-not $lastTag) { $lastTag = "v0.0.0" }
@@ -52,11 +57,6 @@ foreach ($proj in $projects) {
 
 git add .
 git commit -m "release $newVersion"
-
-# 5️⃣ Build + Test
-dotnet restore
-dotnet build -c Release
-dotnet test
 
 # 6️⃣ Pack (gera nupkg)
 if (Test-Path artifacts) { Remove-Item artifacts -Recurse -Force }
