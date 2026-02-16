@@ -4,23 +4,22 @@ param(
     [string]$Bump
 )
 
-Write-Host "Iniciando release..."
+Write-Host "========== RELEASE =========="
 
-# Verifica working tree limpa
+# 1️⃣ Verifica se repo está limpo
 if (git status --porcelain) {
     Write-Host "Working tree não está limpa."
     exit 1
 }
 
-# Troca para main se existir
+# 2️⃣ Vai para main e atualiza
 $currentBranch = git rev-parse --abbrev-ref HEAD
 if ($currentBranch -ne "main") {
     git checkout main
 }
-
 git pull
 
-# Pega última tag
+# 3️⃣ Pega última tag
 $lastTag = git describe --tags --abbrev=0 2>$null
 if (-not $lastTag) { $lastTag = "v0.0.0" }
 
@@ -40,8 +39,10 @@ switch ($Bump) {
 $newVersion = "$major.$minor.$patch"
 Write-Host "Nova versão: $newVersion"
 
-# Atualiza todos os csproj encontrados
-$projects = Get-ChildItem -Recurse -Filter *.csproj
+# 4️⃣ Atualiza todos os csproj (exceto testes)
+$projects = Get-ChildItem -Recurse -Filter *.csproj | Where-Object {
+    $_.FullName -notmatch "Test"
+}
 
 foreach ($proj in $projects) {
     (Get-Content $proj.FullName) `
@@ -52,34 +53,38 @@ foreach ($proj in $projects) {
 git add .
 git commit -m "release $newVersion"
 
-# Build e Test
+# 5️⃣ Build + Test
 dotnet restore
 dotnet build -c Release
 dotnet test
 
-# Criar pasta publish
-if (Test-Path publish) { Remove-Item publish -Recurse -Force }
-New-Item -ItemType Directory -Path publish | Out-Null
+# 6️⃣ Pack (gera nupkg)
+if (Test-Path artifacts) { Remove-Item artifacts -Recurse -Force }
+dotnet pack -c Release -o artifacts
 
-# Publica todos projetos Web
-foreach ($proj in $projects) {
-    $content = Get-Content $proj.FullName
-    if ($content -match "<Project Sdk=`"Microsoft.NET.Sdk.Web`"") {
-        $name = [System.IO.Path]::GetFileNameWithoutExtension($proj.Name)
-        dotnet publish $proj.FullName -c Release -o "publish/$name"
-    }
+# 7️⃣ Publica no NuGet
+$apiKey = $env:NUGET_API_KEY
+if (-not $apiKey) {
+    Write-Host "Variável NUGET_API_KEY não encontrada."
+    exit 1
 }
 
-# Compactar
-$zipName = "$((Split-Path -Leaf (Get-Location)))-$newVersion.zip"
-Compress-Archive publish/* $zipName -Force
+Get-ChildItem artifacts -Filter *.nupkg | ForEach-Object {
+    dotnet nuget push $_.FullName `
+        --api-key $apiKey `
+        --source https://api.nuget.org/v3/index.json `
+        --skip-duplicate
+}
 
-# Criar tag
+# 8️⃣ Cria tag e push
 git tag "v$newVersion"
 git push
 git push --tags
 
-# Criar release (GitHub CLI)
-gh release create "v$newVersion" $zipName --title "v$newVersion"
+# 9️⃣ Cria GitHub Release e anexa pacotes
+$packages = Get-ChildItem artifacts -Filter *.nupkg | ForEach-Object { $_.FullName }
 
-Write-Host "Release criada com sucesso!"
+gh release create "v$newVersion" $packages `
+    --title "v$newVersion"
+
+Write-Host "========== RELEASE CONCLUÍDA =========="
