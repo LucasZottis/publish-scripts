@@ -56,7 +56,11 @@ function Switch-ToBranch {
         throw "Falha ao trocar para a branch '$Branch'."
     }
 
-    git pull
+    git pull --ff-only
+    
+    if ($LASTEXITCODE -ne 0) {
+        throw "Falha ao atualizar a branch '$Branch'."
+    }
 }
 
 # Pega branch atual
