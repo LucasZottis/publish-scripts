@@ -8,6 +8,7 @@ $ErrorActionPreference = "Stop"
 
 # Importação de módulos
 Import-Module "$PSScriptRoot\modules\git-functions.psm1" -Force
+Import-Module "$PSScriptRoot\modules\publish-functions.psm1" -Force
 
 # Garante que o repositório está limpo
 Ensure-CleanWorkingTree
@@ -17,6 +18,13 @@ $executionRoot = (Get-Location).Path
 
 # Arquivo de configuração que está no diretório de execução
 $publishSettings = Get-PublishSettings -path $executionRoot
+
+# BEFORE
+if ($publishSettings.Scripts -and $publishSettings.Scripts.Before) {
+    foreach ($script in $publishSettings.Scripts.Before) {
+        Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
+    }
+}
 
 foreach ($project in $publishSettings.Projects) {
 
@@ -31,3 +39,9 @@ foreach ($project in $publishSettings.Projects) {
     & $scriptPath -Project $project
 }
 
+# AFTER
+if ($publishSettings.Scripts -and $publishSettings.Scripts.After) {
+    foreach ($script in $publishSettings.Scripts.After) {
+        Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
+    }
+}
