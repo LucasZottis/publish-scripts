@@ -15,11 +15,11 @@
       ]
     }
   ],
-  "Scripts": { // Será executado antes de qualquer publicação ou depois de todas as publicações.
+  "Scripts": [ // Será executado antes de qualquer publicação ou depois de todas as publicações.
     {
       "Path": "", // Script que está em local diferente
       "Name": "", // Script que está junto do publicador
       "When": "", // AfterPublish (Após a publicação), (BeforePublish) Antes da publicação
     }
-  }
+  ]
 }
