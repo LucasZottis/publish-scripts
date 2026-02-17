@@ -5,6 +5,10 @@
   "required": ["DefaultBranch", "Projects"],
   "additionalProperties": false,
   "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URL do JSON Schema para validação"
+    },
     "DefaultBranch": {
       "type": "string",
       "minLength": 1

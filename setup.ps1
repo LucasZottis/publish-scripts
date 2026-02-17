@@ -1,4 +1,11 @@
+# Força UTF-8 mesmo no PowerShell 5
+chcp 65001 > $null
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 Write-Host "Configurando variáveis do Publicador..."
+
+$env:PATHEXT += ";.PS1"
 
 # Pasta onde o script está
 $ScriptFolder = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -35,3 +42,7 @@ else {
 }
 
 Write-Host "Concluído."
+
+Write-Host ""
+Write-Host "Pressione qualquer tecla para fechar..."
+[System.Console]::ReadKey($true) | Out-Null

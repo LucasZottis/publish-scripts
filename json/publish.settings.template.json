@@ -1,0 +1,44 @@
+{
+  "$schema": "./publish.settings.schema.json",
+  "DefaultBranch": "",
+  "Projects": [
+    {
+      "Path": "",
+      "PublishPath": "",
+      "Type": "",
+      "Name": "",
+      "Scripts": {
+        "Before": [
+          {
+            "Type": "",
+            "Path": "",
+            "Command": ""
+          }
+        ],
+        "After": [
+          {
+            "Type": "",
+            "Path": "",
+            "Command": ""
+          }
+        ]
+      }
+    }
+  ],
+  "Scripts": {
+    "Before": [
+      {
+        "Type": "",
+        "Path": "",
+        "Command": ""
+      }
+    ],
+    "After": [
+      {
+        "Type": "",
+        "Path": "",
+        "Command": ""
+      }
+    ]
+  }
+}
