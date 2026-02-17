@@ -61,6 +61,10 @@ function Run-ApiPublish {
 
     Write-Host "→ Executando dotnet publish"
     & dotnet publish $projectPath -c $configuration -o $outputPath
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Erro ao publicar projeto"
+    }
 }
 
 function Run-BlazorPublish {
@@ -74,6 +78,10 @@ function Run-BlazorPublish {
 
     Write-Host "→ Executando dotnet publish"
     & dotnet publish $projectPath -c $configuration -o $outputPath
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Erro ao publicar projeto"
+    }
 }
 
 Export-ModuleMember -Function *
