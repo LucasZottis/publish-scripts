@@ -36,6 +36,10 @@ function Get-PublishSettings {
         throw "Erro ao ler ou converter o JSON do arquivo: $pathPublishSettings"
     }
 
+    if (-not $config.DefaultBranch) {
+        throw "DefaultBranch não definido no publish.settings.json"
+    }
+
     return $config
 }
 
