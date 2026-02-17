@@ -20,4 +20,23 @@ function Get-BumpedVersion {
     return "$major.$minor.$patch"
 }
 
+function Get-PublishSettings {
+    param( [string]$Path )
+
+    $pathPublishSettings = "$Path/publish.settings.json"
+
+    if (-not (Test-Path $pathPublishSettings)) {
+        throw "Arquivo de publicação não existe"
+    }
+    
+    try {
+        $config = Get-Content $pathPublishSettings -Raw | ConvertFrom-Json
+    }
+    catch {
+        throw "Erro ao ler ou converter o JSON do arquivo: $pathPublishSettings"
+    }
+
+    return $config
+}
+
 Export-ModuleMember -Function *
