@@ -1,8 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Publish Configuration Schema",
+  "title": "Publisher Release Schema",
   "type": "object",
   "required": ["DefaultBranch", "Projects"],
+  "additionalProperties": false,
   "properties": {
     "DefaultBranch": {
       "type": "string",
@@ -16,16 +17,14 @@
       }
     },
     "Scripts": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/scriptGlobal"
-      }
+      "$ref": "#/definitions/globalScripts"
     }
   },
   "definitions": {
     "project": {
       "type": "object",
       "required": ["Path", "PublishPath", "Type"],
+      "additionalProperties": false,
       "properties": {
         "Name": {
           "type": "string"
@@ -43,51 +42,93 @@
           "enum": ["API", "Blazor", "Angular", "Nuget", "Console"]
         },
         "Scripts": {
+          "$ref": "#/definitions/projectScripts"
+        }
+      }
+    },
+
+    "projectScripts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Before": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/scriptProject"
+            "$ref": "#/definitions/script"
+          }
+        },
+        "After": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/script"
           }
         }
       }
     },
-    "scriptProject": {
+
+    "globalScripts": {
       "type": "object",
-      "required": ["When"],
+      "additionalProperties": false,
       "properties": {
-        "Name": {
-          "type": "string"
+        "Before": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/script"
+          }
         },
-        "Path": {
-          "type": "string"
-        },
-        "When": {
-          "type": "string",
-          "enum": ["BeforePublish", "AfterPublish"]
+        "After": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/script"
+          }
         }
-      },
-      "oneOf": [
-        { "required": ["Name"] },
-        { "required": ["Path"] }
-      ]
+      }
     },
-    "scriptGlobal": {
+
+    "script": {
       "type": "object",
-      "required": ["When"],
+      "required": ["Type"],
+      "additionalProperties": false,
       "properties": {
-        "Name": {
-          "type": "string"
+        "Type": {
+          "type": "string",
+          "enum": ["powershell", "ps1", "cmd"]
         },
         "Path": {
           "type": "string"
         },
-        "When": {
-          "type": "string",
-          "enum": ["BeforeAll", "AfterAll"]
+        "Command": {
+          "type": "string"
         }
       },
-      "oneOf": [
-        { "required": ["Name"] },
-        { "required": ["Path"] }
+      "allOf": [
+        {
+          "if": {
+            "properties": { "Type": { "const": "ps1" } }
+          },
+          "then": {
+            "required": ["Path"],
+            "not": { "required": ["Command"] }
+          }
+        },
+        {
+          "if": {
+            "properties": { "Type": { "const": "powershell" } }
+          },
+          "then": {
+            "required": ["Command"],
+            "not": { "required": ["Path"] }
+          }
+        },
+        {
+          "if": {
+            "properties": { "Type": { "const": "cmd" } }
+          },
+          "then": {
+            "required": ["Command"],
+            "not": { "required": ["Path"] }
+          }
+        }
       ]
     }
   }
