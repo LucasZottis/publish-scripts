@@ -10,6 +10,7 @@
         {
           "Path": "", // Script que está em local diferente
           "Name": "", // Script que está junto do publicador
+          "When": "", // AfterPublish (Após a publicação), (BeforePublish) Antes da publicação
       ]
     }
   ]
