@@ -5,7 +5,7 @@ function Update-VersionInProjects {
     )
 
     $projects = Get-ChildItem -Recurse -Filter *.csproj |
-                Where-Object { $_.FullName -notmatch "Test" }
+                Where-Object { $_.FullName -notmatch '\btest(s)?\b' }
 
     foreach ($proj in $projects) {
 
@@ -43,7 +43,7 @@ function Run-UnitTests {
 
     Write-Host "Executando testes unitários..."
 
-    dotnet test --configuration Release
+    dotnet test --configuration Release --verbosity minimal
 
     if ($LASTEXITCODE -ne 0) {
         throw "Testes unitários falharam. Release abortado."
@@ -51,19 +51,22 @@ function Run-UnitTests {
 }
 
 function Run-ApiPublish {
-    params(
-        [Parameter(Mandatory = $true)]
-        [string]$ProjectPath
-    
-        [Parameter(Mandatory = $true)]
-        [string]$OutputPath
+    param(
+        [Parameter(Mandatory)]
+        [string]$ProjectPath,
+
+        [Parameter(Mandatory)]
+        [string]$OutputPath,
+
+        [string]$Configuration = "Release"
     )
 
     Write-Host "→ Executando dotnet publish"
-    & dotnet publish $projectPath -c $configuration -o $outputPath
+
+    & dotnet publish $ProjectPath -c $Configuration -o $OutputPath
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Erro ao publicar projeto"
+        throw "Erro ao publicar projeto API."
     }
 }
 
@@ -77,7 +80,10 @@ function Run-BlazorPublish {
     )
 
     Write-Host "→ Executando dotnet publish"
-    & dotnet publish $projectPath -c $configuration -o $outputPath
+    & dotnet publish $ProjectPath `
+        -c $Configuration `
+        -o $OutputPath `
+        -p:PublishTrimmed=true
 
     if ($LASTEXITCODE -ne 0) {
         throw "Erro ao publicar projeto"
