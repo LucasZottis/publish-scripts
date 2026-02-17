@@ -1,8 +1,7 @@
-# (substitua as primeiras linhas do script por este bloco)
 Param(
     [Parameter(Mandatory=$false)]
-    [string]$PublishDir,
-
+    [string]$PublishPath,
+    
     [int]$HashLength = 8,
 
     [switch]$DryRun
@@ -188,4 +187,5 @@ foreach ($pair in $renamed) {
 }
 
 Write-Log ("Done. Renamed {0} files. Use -DryRun to test." -f $renamed.Count)
+
 exit 0
