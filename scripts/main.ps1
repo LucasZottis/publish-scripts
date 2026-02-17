@@ -27,6 +27,8 @@ if ($publishSettings.DefaultBranch -ne $currentBranch) {
     Switch-ToBranch -Branch $publishSettings.DefaultBranch
 }
 
+$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+
 # BEFORE
 if ($publishSettings.Scripts -and $publishSettings.Scripts.Before) {
     foreach ($script in $publishSettings.Scripts.Before) {
