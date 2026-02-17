@@ -4,6 +4,7 @@ param(
     [string]$Bump
 )
 
+$Global:Bump = $Bump
 $ErrorActionPreference = "Stop"
 
 # Importação de módulos
