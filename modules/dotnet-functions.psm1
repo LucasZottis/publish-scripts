@@ -38,7 +38,6 @@ function Update-VersionInProjects {
     }
 }
 
-
 # Executa testes unitários
 function Run-UnitTests {
 
@@ -49,6 +48,32 @@ function Run-UnitTests {
     if ($LASTEXITCODE -ne 0) {
         throw "Testes unitários falharam. Release abortado."
     }
+}
+
+function Run-ApiPublish {
+    params(
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectPath
+    
+        [Parameter(Mandatory = $true)]
+        [string]$OutputPath
+    )
+
+    Write-Host "→ Executando dotnet publish"
+    & dotnet publish $projectPath -c $configuration -o $outputPath
+}
+
+function Run-BlazorPublish {
+    params(
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectPath
+    
+        [Parameter(Mandatory = $true)]
+        [string]$OutputPath
+    )
+
+    Write-Host "→ Executando dotnet publish"
+    & dotnet publish $projectPath -c $configuration -o $outputPath
 }
 
 Export-ModuleMember -Function *
