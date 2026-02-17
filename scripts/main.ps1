@@ -9,8 +9,6 @@ $ErrorActionPreference = "Stop"
 # Importação de módulos
 Import-Module "$PSScriptRoot\git-functions.psm1" -Force
 
-## Write-Host "========== PUBLISH =========="
-
 # Garante que o repositório está limpo
 Ensure-CleanWorkingTree
 
@@ -23,4 +21,6 @@ $publishSettings = Get-PublishSettings -path $executionRoot
 # Obtém os projetos que serão publicados
 $projects = $publishSettings.Projects
 
-## Write-Host "========== RELEASE CONCLUÍDA =========="
+foreach ($project in $Config.Projects) {
+    
+}
