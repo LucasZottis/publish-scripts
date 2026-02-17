@@ -39,4 +39,46 @@ function Get-PublishSettings {
     return $config
 }
 
+function Invoke-CustomScript {
+    param (
+        [Parameter(Mandatory = $true)]
+        [pscustomobject]$ScriptConfig,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ScriptRoot
+    )
+
+    switch ($ScriptConfig.Type.ToLower()) {
+
+        "powershell" {
+            Write-Host "→ Executando PowerShell inline"
+            & ([scriptblock]::Create($ScriptConfig.Command))
+        }
+
+        "ps1" {
+            Write-Host "→ Executando arquivo PS1"
+            $fullPath = Join-Path $ScriptRoot $ScriptConfig.Path
+
+            if (!(Test-Path $fullPath)) {
+                throw "Script não encontrado: $fullPath"
+            }
+
+            & $fullPath
+        }
+
+        "cmd" {
+            Write-Host "→ Executando CMD"
+            cmd.exe /c $ScriptConfig.Command
+        }
+
+        default {
+            throw "Tipo de script inválido: $($ScriptConfig.Type)"
+        }
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Erro ao executar script do tipo $($ScriptConfig.Type)"
+    }
+}
+
 Export-ModuleMember -Function *
