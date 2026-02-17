@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 # Importação de módulos
-Import-Module "$PSScriptRoot\git-functions.psm1" -Force
+Import-Module "$PSScriptRoot\modules\git-functions.psm1" -Force
 
 # Garante que o repositório está limpo
 Ensure-CleanWorkingTree
@@ -22,5 +22,8 @@ $publishSettings = Get-PublishSettings -path $executionRoot
 $projects = $publishSettings.Projects
 
 foreach ($project in $Config.Projects) {
-    
+    switch($project.Type) {
+        "API" { & publish-api.ps1 -project $project }
+        "Blazor" { & publish-blazor.ps1 -project $project }
+    }
 }
