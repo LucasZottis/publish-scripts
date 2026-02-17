@@ -57,13 +57,12 @@ function Invoke-CustomScript {
 
         "ps1" {
             Write-Host "→ Executando arquivo PS1"
-            $fullPath = Join-Path $ScriptRoot $ScriptConfig.Path
-
-            if (!(Test-Path $fullPath)) {
-                throw "Script não encontrado: $fullPath"
-            }
-
-            & $fullPath
+        
+            $resolvedPath = Resolve-ScriptPath `
+                -RelativePath $ScriptConfig.Path `
+                -PublisherRoot $ScriptRoot
+        
+            & $resolvedPath
         }
 
         "cmd" {
@@ -79,6 +78,38 @@ function Invoke-CustomScript {
     if ($LASTEXITCODE -ne 0) {
         throw "Erro ao executar script do tipo $($ScriptConfig.Type)"
     }
+}
+
+function Resolve-ScriptPath {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$RelativePath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$PublisherRoot
+    )
+
+    # Se já for absoluto
+    if ([System.IO.Path]::IsPathRooted($RelativePath)) {
+        if (Test-Path $RelativePath) {
+            return (Resolve-Path $RelativePath).Path
+        }
+        throw "Script não encontrado (caminho absoluto): $RelativePath"
+    }
+
+    # 1️⃣ Verifica na pasta onde foi executado
+    $workingPath = Join-Path $PWD $RelativePath
+    if (Test-Path $workingPath) {
+        return (Resolve-Path $workingPath).Path
+    }
+
+    # 2️⃣ Verifica na raiz do publicador
+    $publisherPath = Join-Path $PublisherRoot $RelativePath
+    if (Test-Path $publisherPath) {
+        return (Resolve-Path $publisherPath).Path
+    }
+
+    throw "Script não encontrado em nenhuma hierarquia: $RelativePath"
 }
 
 Export-ModuleMember -Function *
