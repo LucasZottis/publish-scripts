@@ -27,7 +27,6 @@ if ($publishSettings.Scripts -and $publishSettings.Scripts.Before) {
 }
 
 foreach ($project in $publishSettings.Projects) {
-
     $type = $project.Type.ToLower()
     $scriptName = "publish-$type.ps1"
     $scriptPath = Join-Path $PSScriptRoot $scriptName
