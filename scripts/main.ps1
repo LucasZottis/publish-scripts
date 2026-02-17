@@ -22,7 +22,7 @@ foreach ($project in $publishSettings.Projects) {
 
     $type = $project.Type.ToLower()
     $scriptName = "publish-$type.ps1"
-    $scriptPath = Join-Path $PSScriptRoot "scripts\$scriptName"
+    $scriptPath = Join-Path $PSScriptRoot $scriptName
 
     if (-not (Test-Path $scriptPath)) {
         throw "Script de publicação não encontrado para o tipo '$($project.Type)': $scriptPath"
