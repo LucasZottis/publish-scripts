@@ -4,6 +4,13 @@
     {
       "Path": "",
       "PublishPath": "",
+      "Type": "", // API, Blazor, Angular, Nuget, Console,
+      "Name": "", // Opcional
+      "Scripts": [ // Opcional
+        {
+          "Path": "", // Script que está em local diferente
+          "Name": "", // Script que está junto do publicador
+      ]
     }
   ]
 }
