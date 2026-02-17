@@ -15,7 +15,7 @@ Run-UnitTests
 $lastVersion = Get-LastVersion
 
 # Obtém nova versão
-$newVersion = Get-BumpedVersion -CurrentVersion lastVersion -Bump $Global:Bump
+$newVersion = Get-BumpedVersion -CurrentVersion $lastVersion -Bump $Global:Bump
 
 # Atualiza versão nos projetos
 Update-VersionInProjects -NewVersion $newVersion
@@ -34,13 +34,13 @@ if ($Project.Scripts -and $Project.Scripts.Before) {
     }
 }
 
-$projectPath = Resolve-Path (Join-Path $scriptRoot $Project.Path)
+$projectPath = (Resolve-Path (Join-Path $scriptRoot $Project.Path)).Path
 $outputPath  = Join-Path $scriptRoot $Project.Output
 
 Run-ApiPublish -ProjectPath $projectPath -OutputPath $outputPath
 
 # AFTER
-if ($project.Scripts -and $Project.Scripts.After) {
+if ($Project.Scripts -and $Project.Scripts.After) {
     foreach ($script in $Project.Scripts.After) {
         Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
     }
