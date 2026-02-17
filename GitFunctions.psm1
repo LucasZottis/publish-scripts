@@ -114,3 +114,5 @@ function Get-LastVersion {
 
     return $latest
 }
+
+Export-ModuleMember -Function *
