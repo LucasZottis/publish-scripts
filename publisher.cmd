@@ -1,2 +1,2 @@
 @echo off
-powershell -ExecutionPolicy Bypass -File "%~dp0Publish.ps1" %*
+powershell -ExecutionPolicy Bypass -File "%~dp0scripts/main.ps1" %*
