@@ -18,12 +18,16 @@ $executionRoot = (Get-Location).Path
 # Arquivo de configuração que está no diretório de execução
 $publishSettings = Get-PublishSettings -path $executionRoot
 
-# Obtém os projetos que serão publicados
-$projects = $publishSettings.Projects
+foreach ($project in $publishSettings.Projects) {
 
-foreach ($project in $Config.Projects) {
-    switch($project.Type) {
-        "API" { & publish-api.ps1 -project $project }
-        "Blazor" { & publish-blazor.ps1 -project $project }
+    $type = $project.Type.ToLower()
+    $scriptName = "publish-$type.ps1"
+    $scriptPath = Join-Path $PSScriptRoot "scripts\$scriptName"
+
+    if (-not (Test-Path $scriptPath)) {
+        throw "Script de publicação não encontrado para o tipo '$($project.Type)': $scriptPath"
     }
+
+    & $scriptPath -Project $project
 }
+
