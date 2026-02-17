@@ -5,6 +5,7 @@ param(
 
 # Importação de módulos
 Import-Module "$PSScriptRoot\modules\publish-functions.psm1" -Force
+Import-Module "$PSScriptRoot\modules\dotnet-functions.psm1" -Force
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 
@@ -23,12 +24,7 @@ if ($Project.Scripts -and $Project.Scripts.Before) {
 $projectPath = Resolve-Path (Join-Path $scriptRoot $Project.Path)
 $outputPath  = Join-Path $scriptRoot $Project.Output
 
-Write-Host "→ Executando dotnet publish"
-& dotnet publish $projectPath -c $configuration -o $outputPath
-
-if ($LASTEXITCODE -ne 0) {
-    throw "Erro ao publicar $($Project.Name)"
-}
+Run-ApiPublish -ProjectPath $projectPath -OutputPath $outputPath
 
 # AFTER
 if ($project.Scripts -and $Project.Scripts.After) {
