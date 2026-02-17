@@ -15,7 +15,7 @@ Run-UnitTests
 $lastVersion = Get-LastVersion
 
 # Obtém nova versão
-$newVersion = Get-BumpedVersion -CurrentVersion lastVersion -Bump $Bump
+$newVersion = Get-BumpedVersion -CurrentVersion lastVersion -Bump $Global:Bump
 
 # Atualiza versão nos projetos
 Update-VersionInProjects -NewVersion $newVersion
