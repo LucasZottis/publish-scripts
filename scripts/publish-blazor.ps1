@@ -4,8 +4,21 @@ param(
 )
 
 # Importação de módulos
+Import-Module "$PSScriptRoot\modules\git-functions.psm1" -Force
 Import-Module "$PSScriptRoot\modules\publish-functions.psm1" -Force
 Import-Module "$PSScriptRoot\modules\dotnet-functions.psm1" -Force
+
+# Executa testes unitários
+Run-UnitTests
+
+# Obtém última versão
+$lastVersion = Get-LastVersion
+
+# Obtém nova versão
+$newVersion = Get-BumpedVersion -CurrentVersion lastVersion -Bump $Bump
+
+# Atualiza versão nos projetos
+Update-VersionInProjects -NewVersion $newVersio
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 
