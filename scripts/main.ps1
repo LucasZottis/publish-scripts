@@ -19,6 +19,26 @@ $executionRoot = (Get-Location).Path
 # Arquivo de configuração que está no diretório de execução
 $publishSettings = Get-PublishSettings -path $executionRoot
 
+# Obtém o branch atual
+$currentBranch = Get-CurrentBranch 
+
+# Troca o branch se não estiver no branch padrão
+if ($publishSettings.DefaultBranch -ne $currentBranch) {
+    Switch-ToBranch -Branch $publishSettings.DefaultBranch
+}
+
+# Executa testes unitários
+Run-UnitTests
+
+# Obtém última versão
+$lastVersion = Get-LastVersion
+
+# Obtém nova versão
+$newVersion = Get-BumpedVersion -CurrentVersion lastVersion -Bump $Bump
+
+# Atualiza versão nos projetos
+Update-VersionInProjects -NewVersion $newVersion
+
 # BEFORE
 if ($publishSettings.Scripts -and $publishSettings.Scripts.Before) {
     foreach ($script in $publishSettings.Scripts.Before) {
