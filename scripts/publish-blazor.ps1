@@ -32,17 +32,17 @@ try {
         }
     }
 
-    # $projectPath = Resolve-Path (Join-Path $scriptRoot $Project.Path)
-    # $outputPath = Join-Path $scriptRoot $Project.Output
+    $projectPath = (Resolve-Path $Project.Path).Path
+    $outputPath = [System.IO.Path]::GetFullPath($Project.PublishPath)
 
-    # Start-BlazorPublish -ProjectPath $projectPath -OutputPath $outputPath
+    Start-BlazorPublish -ProjectPath $projectPath -OutputPath $outputPath
 
-    # # AFTER
-    # if ($project.Scripts -and $Project.Scripts.After) {
-    #     foreach ($script in $Project.Scripts.After) {
-    #         Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
-    #     }
-    # }
+    # AFTER
+    if ($project.Scripts -and $Project.Scripts.After) {
+        foreach ($script in $Project.Scripts.After) {
+            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
+        }
+    }
 
     Write-Host "✔ $($Project.Name) publicado com sucesso!"
 }
