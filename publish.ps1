@@ -8,14 +8,16 @@ $Global:Bump = $Bump
 $ErrorActionPreference = "Stop"
 
 # Importação de módulos
+Import-Module "$PSScriptRoot\modules\functions.psm1" -Force
 Import-Module "$PSScriptRoot\modules\git-functions.psm1" -Force
 Import-Module "$PSScriptRoot\modules\publish-functions.psm1" -Force
 
 # Garante que o repositório está limpo
-Ensure-CleanWorkingTree
+Test-CleanWorkingTree
 
 # Diretório onde o usuário executou o comando
 $executionRoot = (Get-Location).Path
+Write-Info "Executando publish a partir do diretório: $executionRoot"
 
 # Arquivo de configuração que está no diretório de execução
 $publishSettings = Get-PublishSettings -path $executionRoot
@@ -25,6 +27,7 @@ $currentBranch = Get-CurrentBranch
 
 # Troca o branch se não estiver no branch padrão
 if ($publishSettings.DefaultBranch -ne $currentBranch) {
+    Write-Info "Trocando para a branch padrão: $($publishSettings.DefaultBranch)"
     Switch-ToBranch -Branch $publishSettings.DefaultBranch
 }
 
@@ -40,7 +43,9 @@ if ($publishSettings.Scripts -and $publishSettings.Scripts.Before) {
 foreach ($project in $publishSettings.Projects) {
     $type = $project.Type.ToLower()
     $scriptName = "publish-$type.ps1"
-    $scriptPath = Join-Path $PSScriptRoot $scriptName
+    $scriptPath = Join-Path $PSScriptRoot "scripts" $scriptName
+
+    # Write-Host $scriptPath
 
     if (-not (Test-Path $scriptPath)) {
         throw "Script de publicação não encontrado para o tipo '$($project.Type)': $scriptPath"

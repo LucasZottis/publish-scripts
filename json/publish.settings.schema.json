@@ -103,6 +103,27 @@
         },
         "Command": {
           "type": "string"
+        },
+        "Arguments": {
+          "type": "object",
+          "description": "Argumentos nomeados enviados ao script via splatting.",
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "number" },
+              { "type": "boolean" },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string" },
+                    { "type": "number" },
+                    { "type": "boolean" }
+                  ]
+                }
+              }
+            ]
+          }
         }
       },
       "allOf": [

@@ -1,11 +1,20 @@
 function Update-VersionInProjects {
     param(
         [Parameter(Mandatory)]
-        [string]$NewVersion
+        [string]$NewVersion,
+
+        # [string]$Path = (Get-Location).Path
+        [string]$Path
     )
 
-    $projects = Get-ChildItem -Recurse -Filter *.csproj |
-                Where-Object { $_.FullName -notmatch '\btest(s)?\b' }
+    if (Test-Path $Path) {
+        $projects = Get-ChildItem -Recurse -Filter *.csproj |
+            Where-Object { $_.FullName -notmatch '\btest(s)?\b' }
+    }
+    else {
+        $projects = Get-ChildItem -Path $Path -Recurse -Filter *.csproj |
+            Where-Object { $_.FullName -notmatch '\btest(s)?\b' }
+    }
 
     foreach ($proj in $projects) {
 
@@ -14,8 +23,8 @@ function Update-VersionInProjects {
         [xml]$xml = Get-Content $proj.FullName
 
         $propertyGroup = $xml.Project.PropertyGroup |
-                         Where-Object { $_.Version } |
-                         Select-Object -First 1
+            Where-Object { $_.Version } |
+                Select-Object -First 1
 
         if ($propertyGroup) {
             $propertyGroup.Version = $NewVersion
@@ -39,9 +48,9 @@ function Update-VersionInProjects {
 }
 
 # Executa testes unitários
-function Run-UnitTests {
+function Start-UnitTests {
 
-    Write-Host "Executando testes unitários..."
+    Write-Host "Executando testes unitários..." -ForegroundColor Green
 
     dotnet test --configuration Release --verbosity minimal
 
@@ -50,7 +59,7 @@ function Run-UnitTests {
     }
 }
 
-function Run-ApiPublish {
+function Start-ApiPublish {
     param(
         [Parameter(Mandatory)]
         [string]$ProjectPath,
@@ -70,10 +79,10 @@ function Run-ApiPublish {
     }
 }
 
-function Run-BlazorPublish {
-    params(
+function Start-BlazorPublish {
+    param(
         [Parameter(Mandatory = $true)]
-        [string]$ProjectPath
+        [string]$ProjectPath,
     
         [Parameter(Mandatory = $true)]
         [string]$OutputPath

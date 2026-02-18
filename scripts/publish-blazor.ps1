@@ -1,6 +1,6 @@
 param(
-  [Parameter(Mandatory = $true)]
-  [pscustomobject]$Project
+    [Parameter(Mandatory = $true)]
+    [pscustomobject]$Project
 )
 
 # Importação de módulos
@@ -9,16 +9,16 @@ Import-Module "$PSScriptRoot\modules\publish-functions.psm1" -Force
 Import-Module "$PSScriptRoot\modules\dotnet-functions.psm1" -Force
 
 # Executa testes unitários
-Run-UnitTests
+Start-UnitTests
 
 # Obtém última versão
 $lastVersion = Get-LastVersion
 
 # Obtém nova versão
-$newVersion = Get-BumpedVersion -CurrentVersion lastVersion -Bump $Global:Bump
+$newVersion = Get-BumpedVersion -CurrentVersion $lastVersion -Bump $Global:Bump
 
 # Atualiza versão nos projetos
-Update-VersionInProjects -NewVersion $newVersio
+Update-VersionInProjects -NewVersion $newVersion
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 
@@ -35,9 +35,9 @@ if ($Project.Scripts -and $Project.Scripts.Before) {
 }
 
 $projectPath = Resolve-Path (Join-Path $scriptRoot $Project.Path)
-$outputPath  = Join-Path $scriptRoot $Project.Output
+$outputPath = Join-Path $scriptRoot $Project.Output
 
-Run-ApiPublish -ProjectPath $projectPath -OutputPath $outputPath
+Start-BlazorPublish -ProjectPath $projectPath -OutputPath $outputPath
 
 # AFTER
 if ($project.Scripts -and $Project.Scripts.After) {

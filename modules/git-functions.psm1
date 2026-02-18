@@ -1,10 +1,12 @@
-function Commit-VersionUpdate {
+Import-Module "$PSScriptRoot\functions.psm1" -Force
+
+function Start-Commit {
     param(
             [Parameter(Mandatory)]
             [string]$NewVersion
     )
 
-    git add *.csproj
+    git add
     
     if ($LASTEXITCODE -ne 0) {
         throw "Erro ao adicionar arquivos."
@@ -65,8 +67,8 @@ function Switch-ToBranch {
 
 # Pega branch atual
 function Get-CurrentBranch {
-
     git rev-parse --is-inside-work-tree 2>$null | Out-Null
+    
     if ($LASTEXITCODE -ne 0) {
         throw "Não está dentro de um repositório Git."
     }
@@ -76,12 +78,16 @@ function Get-CurrentBranch {
     if ($current -eq "HEAD") {
         throw "Detached HEAD não permitido."
     }
+    
+    Write-Info "Branch atual: $current"
 
     return $current
 }
 
 # Garante que o repositório está limpo
-function Ensure-CleanWorkingTree {
+function Test-CleanWorkingTree {
+    Write-Info "Verificando se o repositório está limpo"
+
     $status = git status --porcelain
 
     if ($status) {

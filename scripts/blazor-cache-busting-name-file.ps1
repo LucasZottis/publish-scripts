@@ -1,9 +1,8 @@
 Param(
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $true)]
     [string]$PublishPath,
-    
+        
     [int]$HashLength = 8,
-
     [switch]$DryRun
 )
 
@@ -19,15 +18,17 @@ if (-not $PublishDir -or $PublishDir.Trim() -eq "") {
 
 # Sanitiza e remove aspas, pontos e barras finais
 if ($PublishDir) {
-    $PublishDir = $PublishDir.Trim('"',' ','\','.')
-} else {
+    $PublishDir = $PublishDir.Trim('"', ' ', '\', '.')
+}
+else {
     Write-Error "PublishDir não informado (parâmetro e env PUBLISH_DIR vazios)."
     exit 1
 }
 
 try {
     $PublishDir = (Resolve-Path $PublishDir).ProviderPath
-} catch {
+}
+catch {
     Write-Error ("PublishDir inválido ou não encontrado: {0}" -f $PublishDir)
     exit 1
 }
@@ -45,7 +46,7 @@ if (-not (Test-Path $fw)) {
 }
 
 # Patterns to process
-$patterns = @('dotnet.runtime*.js','dotnet.native*.js')
+$patterns = @('dotnet.runtime*.js', 'dotnet.native*.js')
 
 # Backup critical files
 $critical = @(
@@ -77,7 +78,8 @@ foreach ($pat in $patterns) {
         try {
             $hashFull = (Get-FileHash -Path $file.FullName -Algorithm SHA256).Hash
             $hash = $hashFull.Substring(0, [Math]::Min($HashLength, $hashFull.Length)).ToLower()
-        } catch {
+        }
+        catch {
             $err = $_.Exception.Message
             Write-Log ("Error hashing {0}: {1}" -f $oldName, $err)
             continue
@@ -89,20 +91,22 @@ foreach ($pat in $patterns) {
 
         if ($DryRun) {
             Write-Log ("DryRun: rename '{0}' -> '{1}'" -f $oldName, $newName)
-        } else {
+        }
+        else {
             if (Test-Path $newPath) { Remove-Item -LiteralPath $newPath -Force }
             Rename-Item -LiteralPath $oldPath -NewName $newName -Force
             Write-Log ("Renamed: {0} -> {1}" -f $oldName, $newName)
         }
 
-        foreach ($cmp in @('.br','.gz')) {
+        foreach ($cmp in @('.br', '.gz')) {
             $oldCmp = Join-Path $fw ($oldName + $cmp)
             if (Test-Path $oldCmp) {
                 $newCmpName = $newName + $cmp
                 $newCmp = Join-Path $fw $newCmpName
                 if ($DryRun) {
                     Write-Log ("DryRun: rename compressed '{0}' -> '{1}'" -f ($oldName + $cmp), $newCmpName)
-                } else {
+                }
+                else {
                     if (Test-Path $newCmp) { Remove-Item -LiteralPath $newCmp -Force }
                     Rename-Item -LiteralPath $oldCmp -NewName $newCmpName -Force
                     Write-Log ("Renamed compressed: {0} -> {1}" -f ($oldName + $cmp), $newCmpName)
@@ -124,7 +128,8 @@ $bootPath = Join-Path $fw 'blazor.boot.json'
 if (Test-Path $bootPath) {
     try {
         $boot = Get-Content $bootPath -Raw | ConvertFrom-Json
-    } catch {
+    }
+    catch {
         Write-Log ("Failed to parse blazor.boot.json: {0}" -f $_.Exception.Message)
         exit 1
     }
@@ -155,16 +160,18 @@ if (Test-Path $bootPath) {
 
     if ($DryRun) {
         Write-Log "DryRun: blazor.boot.json would be updated."
-    } else {
+    }
+    else {
         $boot | ConvertTo-Json -Depth 10 | Set-Content -Path $bootPath -Encoding utf8
         Write-Log "blazor.boot.json updated."
     }
-} else {
+}
+else {
     Write-Log ("blazor.boot.json not found at {0}" -f $bootPath)
 }
 
 # Update textual files under wwwroot
-$filesToPatch = Get-ChildItem -Path $wwwroot -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in @('.js','.json','.html','.css') } | Select-Object -ExpandProperty FullName
+$filesToPatch = Get-ChildItem -Path $wwwroot -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in @('.js', '.json', '.html', '.css') } | Select-Object -ExpandProperty FullName
 
 foreach ($pair in $renamed) {
     $oldEsc = [regex]::Escape($pair.Old)
@@ -174,13 +181,15 @@ foreach ($pair in $renamed) {
             if ($null -ne $txt -and $txt -match $oldEsc) {
                 if ($DryRun) {
                     Write-Log ("DryRun: file '{0}' contains '{1}' - would replace with '{2}'" -f $f, $pair.Old, $pair.New)
-                } else {
+                }
+                else {
                     $updated = $txt -replace $oldEsc, $pair.New
                     Set-Content -Path $f -Value $updated -Encoding utf8
                     Write-Log ("Updated: {0} (replaced {1} with {2})" -f $f, $pair.Old, $pair.New)
                 }
             }
-        } catch {
+        }
+        catch {
             Write-Log ("Error updating {0}: {1}" -f $f, $_.Exception.Message)
         }
     }
