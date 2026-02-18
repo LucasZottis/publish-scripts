@@ -122,6 +122,8 @@ function Get-LastVersion {
         Sort-Object {[version]$_} -Descending |
         Select-Object -First 1
 
+    Write-Host "Versão Atual: $latest" -ForegroundColor Green
+
     return $latest
 }
 

@@ -4,59 +4,71 @@ param(
     [string]$Bump
 )
 
-$Global:Bump = $Bump
-$ErrorActionPreference = "Stop"
+try {
+    
+    $Global:Bump = $Bump
+    $ErrorActionPreference = "Stop"
 
-# Importação de módulos
-Import-Module "$PSScriptRoot\modules\functions.psm1" -Force
-Import-Module "$PSScriptRoot\modules\git-functions.psm1" -Force
-Import-Module "$PSScriptRoot\modules\publish-functions.psm1" -Force
+    # Importação de módulos
+    Import-Module "$PSScriptRoot\modules\functions.psm1" -Force
+    Import-Module "$PSScriptRoot\modules\git-functions.psm1" -Force
+    Import-Module "$PSScriptRoot\modules\publish-functions.psm1" -Force
 
-# Garante que o repositório está limpo
-Test-CleanWorkingTree
+    # Garante que o repositório está limpo
+    Test-CleanWorkingTree
 
-# Diretório onde o usuário executou o comando
-$executionRoot = (Get-Location).Path
-Write-Info "Executando publish a partir do diretório: $executionRoot"
+    # Diretório onde o usuário executou o comando
+    $executionRoot = (Get-Location).Path
+    Write-Info "Executando publish a partir do diretório: $executionRoot"
 
-# Arquivo de configuração que está no diretório de execução
-$publishSettings = Get-PublishSettings -path $executionRoot
+    # Arquivo de configuração que está no diretório de execução
+    $publishSettings = Get-PublishSettings -path $executionRoot
 
-# Obtém o branch atual
-$currentBranch = Get-CurrentBranch 
+    # Obtém o branch atual
+    $currentBranch = Get-CurrentBranch 
 
-# Troca o branch se não estiver no branch padrão
-if ($publishSettings.DefaultBranch -ne $currentBranch) {
-    Write-Info "Trocando para a branch padrão: $($publishSettings.DefaultBranch)"
-    Switch-ToBranch -Branch $publishSettings.DefaultBranch
-}
-
-$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-
-# BEFORE
-if ($publishSettings.Scripts -and $publishSettings.Scripts.Before) {
-    foreach ($script in $publishSettings.Scripts.Before) {
-        Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
-    }
-}
-
-foreach ($project in $publishSettings.Projects) {
-    $type = $project.Type.ToLower()
-    $scriptName = "publish-$type.ps1"
-    $scriptPath = Join-Path $PSScriptRoot "scripts" $scriptName
-
-    # Write-Host $scriptPath
-
-    if (-not (Test-Path $scriptPath)) {
-        throw "Script de publicação não encontrado para o tipo '$($project.Type)': $scriptPath"
+    # Troca o branch se não estiver no branch padrão
+    if ($publishSettings.DefaultBranch -ne $currentBranch) {
+        Write-Info "Trocando para a branch padrão: $($publishSettings.DefaultBranch)"
+        Switch-ToBranch -Branch $publishSettings.DefaultBranch
     }
 
-    & $scriptPath -Project $project
-}
+    $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# AFTER
-if ($publishSettings.Scripts -and $publishSettings.Scripts.After) {
-    foreach ($script in $publishSettings.Scripts.After) {
-        Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
+    # BEFORE
+    if ($publishSettings.Scripts -and $publishSettings.Scripts.Before) {
+        foreach ($script in $publishSettings.Scripts.Before) {
+            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
+        }
     }
+
+    foreach ($project in $publishSettings.Projects) {
+        $type = $project.Type.ToLower()
+        $scriptName = "publish-$type.ps1"
+        $scriptPath = Join-Path $PSScriptRoot "scripts" $scriptName
+
+        if (-not (Test-Path $scriptPath)) {
+            throw "Script de publicação não encontrado para o tipo '$($project.Type)': $scriptPath"
+        }
+
+        & $scriptPath -Project $project
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao publicar o projeto '$($project.Name)'."
+        }
+    }
+
+    # AFTER
+    if ($publishSettings.Scripts -and $publishSettings.Scripts.After) {
+        foreach ($script in $publishSettings.Scripts.After) {
+            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
+        }
+    }
+}
+catch {
+    Write-Error $_
+    exit 1
+}
+finally {
+    <#Do this after the try block regardless of whether an exception occurred or not#>
 }

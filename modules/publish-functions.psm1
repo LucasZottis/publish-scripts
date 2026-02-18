@@ -19,7 +19,10 @@ function Get-BumpedVersion {
         "patch" { $patch++ }
     }
 
-    return "$major.$minor.$patch"
+    $newVersion = "$major.$minor.$patch";
+
+    Write-Host "Nova Versão: $newVersion" -ForegroundColor Green
+    return $newVersion
 }
 
 function Get-PublishSettings {
@@ -55,8 +58,6 @@ function Invoke-CustomScript {
         [string]$ScriptRoot
     )
 
-    Write-Info $ScriptRoot
-
     switch ($ScriptConfig.Type.ToLower()) {
         "powershell" {
             Write-Info "Executando PowerShell inline"
@@ -64,13 +65,11 @@ function Invoke-CustomScript {
         }
 
         "ps1" {
-            Write-Info "Executando arquivo PS1"
-        
             $resolvedPath = Resolve-ScriptPath `
                 -RelativePath $ScriptConfig.Path `
                 -ScriptRoot $ScriptRoot
-        
-            Write-Info "Caminho do script resolvido: $resolvedPath"
+            
+            Write-Info "Executando arquivo .ps1 em: $resolvedPath"
             $arguments = Resolve-ScriptArguments -Arguments $ScriptConfig.Arguments
 
             & $resolvedPath @arguments
@@ -102,15 +101,12 @@ function Resolve-ScriptPath {
 
     # 1️⃣ Verifica na pasta onde foi executado
     $workingPath = Join-Path $PWD $RelativePath
-    Write-Info "Procurando script em: $workingPath"
     if (Test-Path $workingPath) {
         return (Resolve-Path $workingPath).Path
     }
 
     # 2️⃣ Verifica na raiz do publicador
-    $publisherPath = Join-Path $ScriptRoot $RelativePath
-    Write-Info "Procurando script em: $publisherPath"
-    
+    $publisherPath = Join-Path $ScriptRoot $RelativePath    
     if (Test-Path $publisherPath) {
         return (Resolve-Path $publisherPath).Path
     }

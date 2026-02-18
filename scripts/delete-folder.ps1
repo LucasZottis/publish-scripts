@@ -9,7 +9,7 @@ Import-Module "$PSScriptRoot\..\modules\functions.psm1" -Force
 $fullPath = [System.IO.Path]::GetFullPath($FolderPath)
 
 if (-not (Test-Path $fullPath)) {
-    Write-Warning "O caminho especificado não existe: $fullPath"
+    Write-Warn "O caminho especificado não existe: $fullPath"
     exit 0
 }
 

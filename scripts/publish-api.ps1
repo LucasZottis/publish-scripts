@@ -3,50 +3,52 @@ param(
     [pscustomobject]$Project
 )
 
-# Importação de módulos
-Import-Module "$PSScriptRoot\..\modules\git-functions.psm1" -Force
-Import-Module "$PSScriptRoot\..\modules\publish-functions.psm1" -Force
-Import-Module "$PSScriptRoot\..\modules\dotnet-functions.psm1" -Force
+try {
+    # Importação de módulos
+    Import-Module "$PSScriptRoot\..\modules\git-functions.psm1" -Force
+    Import-Module "$PSScriptRoot\..\modules\publish-functions.psm1" -Force
+    Import-Module "$PSScriptRoot\..\modules\dotnet-functions.psm1" -Force
 
-# Executa testes unitários
-Start-UnitTests
+    Write-Title "Iniciando publicação do projeto $($Project.Name)"
 
-# Obtém última versão
-$lastVersion = Get-LastVersion
+    # Executa testes unitários
+    Start-UnitTests
 
-# Obtém nova versão
-$newVersion = Get-BumpedVersion -CurrentVersion $lastVersion -Bump $Global:Bump
+    # Obtém última versão
+    $lastVersion = Get-LastVersion
 
-$directory = Split-Path $Project.Path -Parent
+    # Obtém nova versão
+    $newVersion = Get-BumpedVersion -CurrentVersion $lastVersion -Bump $Global:Bump
 
-# Atualiza versão nos projetos
-Update-VersionInProjects -NewVersion $newVersion -Path $directory
+    $directory = Split-Path $Project.Path -Parent
 
-$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+    # Atualiza versão nos projetos
+    Update-VersionInProjects -NewVersion $newVersion -Path $directory
 
-Write-Host ""
-Write-Host "=============================="
-Write-Host "Publicando: $($Project.Name)"
-Write-Host "=============================="
-Write-Host ""
+    $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# BEFORE
-if ($Project.Scripts -and $Project.Scripts.Before) {
-    foreach ($script in $Project.Scripts.Before) {
-        Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
+    # BEFORE
+    if ($Project.Scripts -and $Project.Scripts.Before) {
+        foreach ($script in $Project.Scripts.Before) {
+            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
+        }
     }
+
+    $projectPath = (Resolve-Path $Project.Path).Path
+    $outputPath = (Resolve-Path $Project.PublishPath).Path
+
+    Start-ApiPublish -ProjectPath $projectPath -OutputPath $outputPath
+
+    # # AFTER
+    # if ($Project.Scripts -and $Project.Scripts.After) {
+    #     foreach ($script in $Project.Scripts.After) {
+    #         Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
+    #     }
+    # }
+
+    Write-Host "✔ $($Project.Name) publicado com sucesso!"
 }
-
-# $projectPath = (Resolve-Path $Project.Path).Path
-# $outputPath = (Resolve-Path $Project.PublishPath).Path
-
-# Start-ApiPublish -ProjectPath $projectPath -OutputPath $outputPath
-
-# # AFTER
-# if ($Project.Scripts -and $Project.Scripts.After) {
-#     foreach ($script in $Project.Scripts.After) {
-#         Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
-#     }
-# }
-
-Write-Host "✔ $($Project.Name) publicado com sucesso!"
+catch {
+    Write-Error $_
+    exit 1
+}
