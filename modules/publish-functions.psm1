@@ -58,9 +58,10 @@ function Invoke-CustomScript {
         [string]$ScriptRoot
     )
 
+    Write-Info "Executando script: $($ScriptConfig.Name) (Tipo: $($ScriptConfig.Type))"
+
     switch ($ScriptConfig.Type.ToLower()) {
         "powershell" {
-            Write-Info "Executando PowerShell inline"
             & ([scriptblock]::Create($ScriptConfig.Command))
         }
 
@@ -69,14 +70,13 @@ function Invoke-CustomScript {
                 -RelativePath $ScriptConfig.Path `
                 -ScriptRoot $ScriptRoot
             
-            Write-Info "Executando arquivo .ps1 em: $resolvedPath"
+            # Write-Info "Executando arquivo .ps1 em: $resolvedPath"
             $arguments = Resolve-ScriptArguments -Arguments $ScriptConfig.Arguments
 
             & $resolvedPath @arguments
         }
 
         "cmd" {
-            Write-Info "Executando CMD"
             cmd.exe /c $ScriptConfig.Command
         }
 

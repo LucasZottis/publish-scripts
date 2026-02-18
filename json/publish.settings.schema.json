@@ -91,12 +91,15 @@
 
     "script": {
       "type": "object",
-      "required": ["Type"],
+      "required": ["Type", "Name"],
       "additionalProperties": false,
       "properties": {
         "Type": {
           "type": "string",
           "enum": ["powershell", "ps1", "cmd"]
+        },
+        "Name": {
+          "type": "string"
         },
         "Path": {
           "type": "string"

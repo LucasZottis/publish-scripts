@@ -1,44 +1,45 @@
 Param(
     [Parameter(Mandatory = $true)]
-    [string]$PublishPath,
+    [string]$FolderPath,
         
-    [int]$HashLength = 8,
-    [switch]$DryRun
+    [int]$HashLength = 8
+    # [switch]$DryRun
 )
 
 function Write-Log { param($m) Write-Host "[AddHash] $m" }
 
-# Se PublishDir não foi fornecido ou veio corrompido, tenta a variável de ambiente
-if (-not $PublishDir -or $PublishDir.Trim() -eq "") {
-    if ($env:PUBLISH_DIR) {
-        $PublishDir = $env:PUBLISH_DIR
-        Write-Log ("Usando PUBLISH_DIR da env: {0}" -f $PublishDir)
-    }
-}
+# # Se FolderPath não foi fornecido ou veio corrompido, tenta a variável de ambiente
+# if (-not $FolderPath -or $FolderPath.Trim() -eq "") {
+#     if ($env:PUBLISH_DIR) {
+#         $FolderPath = $env:PUBLISH_DIR
+#         Write-Log ("Usando PUBLISH_DIR da env: {0}" -f $FolderPath)
+#     }
+# }
 
-# Sanitiza e remove aspas, pontos e barras finais
-if ($PublishDir) {
-    $PublishDir = $PublishDir.Trim('"', ' ', '\', '.')
-}
-else {
-    Write-Error "PublishDir não informado (parâmetro e env PUBLISH_DIR vazios)."
-    exit 1
-}
+# # Sanitiza e remove aspas, pontos e barras finais
+# if ($FolderPath) {
+#     $FolderPath = $FolderPath.Trim('"', ' ', '\', '.')
+# }
+# else {
+#     Write-Error "FolderPath não informado (parâmetro e env PUBLISH_DIR vazios)."
+#     exit 1
+# }
 
 try {
-    $PublishDir = (Resolve-Path $PublishDir).ProviderPath
+    # $FolderPath = (Resolve-Path $FolderPath).ProviderPath
+    $FolderPath =[System.IO.Path]::GetFullPath($FolderPath)
 }
 catch {
-    Write-Error ("PublishDir inválido ou não encontrado: {0}" -f $PublishDir)
+    Write-Error ("FolderPath inválido ou não encontrado: {0}" -f $FolderPath)
     exit 1
 }
 
-if (-not (Test-Path $PublishDir)) {
-    Write-Error ("PublishDir not found: {0}" -f $PublishDir)
+if (-not (Test-Path $FolderPath)) {
+    Write-Error ("FolderPath not found: {0}" -f $FolderPath)
     exit 1
 }
 
-$wwwroot = Join-Path $PublishDir 'wwwroot'
+$wwwroot = Join-Path $FolderPath 'wwwroot'
 $fw = Join-Path $wwwroot '_framework'
 if (-not (Test-Path $fw)) {
     Write-Log ("_framework folder not found at {0} - nothing to do." -f $fw)
@@ -50,10 +51,10 @@ $patterns = @('dotnet.runtime*.js', 'dotnet.native*.js')
 
 # Backup critical files
 $critical = @(
-    Join-Path $fw 'blazor.boot.json',
-    Join-Path $wwwroot 'service-worker-assets.js',
-    Join-Path $wwwroot 'service-worker.published.js',
-    Join-Path $wwwroot 'index.html'
+    (Join-Path $fw 'blazor.boot.json'),
+    (Join-Path $wwwroot 'service-worker-assets.js'),
+    (Join-Path $wwwroot 'service-worker.published.js'),
+    (Join-Path $wwwroot 'index.html')
 )
 foreach ($c in $critical) {
     if (Test-Path $c) {

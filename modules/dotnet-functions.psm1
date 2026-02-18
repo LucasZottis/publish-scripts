@@ -1,3 +1,5 @@
+Import-Module "$PSScriptRoot\functions.psm1" -Force
+
 function Update-VersionInProjects {
     param(
         [Parameter(Mandatory)]
@@ -70,9 +72,9 @@ function Start-ApiPublish {
         [string]$Configuration = "Release"
     )
 
-    Write-Host "→ Executando dotnet publish"
+    Write-Info "Executando dotnet publish"
 
-    & dotnet publish $ProjectPath -c $Configuration -o $OutputPath
+    & dotnet publish $ProjectPath -c $Configuration -o $OutputPath --verbosity quiet
 
     if ($LASTEXITCODE -ne 0) {
         throw "Erro ao publicar projeto API."
@@ -88,11 +90,11 @@ function Start-BlazorPublish {
         [string]$OutputPath
     )
 
-    Write-Host "→ Executando dotnet publish"
-    & dotnet publish $ProjectPath `
-        -c $Configuration `
-        -o $OutputPath `
-        -p:PublishTrimmed=true
+    Write-Info "Projeto: $projectPath"
+    Write-Info "Saída: $outputPath"
+    Write-Info "Executando dotnet publish"
+
+    & dotnet publish $ProjectPath -c Release -o $OutputPath -p:PublishTrimmed=true --verbosity quiet
 
     if ($LASTEXITCODE -ne 0) {
         throw "Erro ao publicar projeto"

@@ -35,18 +35,18 @@ try {
     }
 
     $projectPath = (Resolve-Path $Project.Path).Path
-    $outputPath = (Resolve-Path $Project.PublishPath).Path
+    $outputPath = [System.IO.Path]::GetFullPath($Project.PublishPath)
 
     Start-ApiPublish -ProjectPath $projectPath -OutputPath $outputPath
 
-    # # AFTER
-    # if ($Project.Scripts -and $Project.Scripts.After) {
-    #     foreach ($script in $Project.Scripts.After) {
-    #         Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
-    #     }
-    # }
+    # AFTER
+    if ($Project.Scripts -and $Project.Scripts.After) {
+        foreach ($script in $Project.Scripts.After) {
+            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
+        }
+    }
 
-    Write-Host "✔ $($Project.Name) publicado com sucesso!"
+    Write-Host "✔ $($Project.Name) publicado com sucesso!" -ForegroundColor Green
 }
 catch {
     Write-Error $_
