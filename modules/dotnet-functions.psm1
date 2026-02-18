@@ -67,17 +67,19 @@ function Start-ApiPublish {
         [string]$ProjectPath,
 
         [Parameter(Mandatory)]
-        [string]$OutputPath,
+        [string]$OutputPath
 
-        [string]$Configuration = "Release"
+        # [string]$Configuration = "Release"
     )
 
     Write-Info "Executando dotnet publish"
 
-    & dotnet publish $ProjectPath -c $Configuration -o $OutputPath --verbosity quiet
+    $output = & dotnet publish $ProjectPath -c Release -o $OutputPath -v q 2>&1
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Erro ao publicar projeto API."
+        Write-Host "❌ Falha no publish:"
+        Write-Host $output
+        exit 1
     }
 }
 
@@ -94,10 +96,14 @@ function Start-BlazorPublish {
     Write-Info "Saída: $outputPath"
     Write-Info "Executando dotnet publish"
 
-    & dotnet publish $ProjectPath -c Release -o $OutputPath -p:PublishTrimmed=true --verbosity quiet
+    
+    $output = & dotnet publish $ProjectPath -c Release -o $OutputPath -p:PublishTrimmed=true -v q 2>&1
+
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Erro ao publicar projeto"
+        Write-Host "❌ Falha no publish:"
+        Write-Host $output
+        exit 1
     }
 }
 
