@@ -1,11 +1,23 @@
-# Força UTF-8 mesmo no PowerShell 5
-chcp 65001 > $null
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$OutputEncoding = [System.Text.Encoding]::UTF8
+Import-Module ".\modules\functions.psm1"
 
-Write-Host "Configurando variáveis do Publicador..."
+Write-Info "Buscando extensões permitidas pelo PATH"
+Write-Info "Extensões atuais: $env:PATHEXT"
 
-$env:PATHEXT += ";.PS1"
+if ($env:PATHEXT -notmatch "\.PS1") {
+
+    $newPathext = "$env:PATHEXT;.PS1"
+
+    # Persiste
+    [Environment]::SetEnvironmentVariable("PATHEXT", $newPathext, "User")
+
+    # Atualiza sessão atual
+    $env:PATHEXT = $newPathext
+
+    Write-Success "PATHEXT atualizado."
+}
+else {
+    Write-Info ".PS1 já está no PATHEXT."
+}
 
 # Pasta onde o script está
 $ScriptFolder = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -13,7 +25,7 @@ $ScriptFolder = Split-Path -Parent $MyInvocation.MyCommand.Path
 # Sobe um nível (onde está o Publicador.cmd)
 $PublicadorRoot = Split-Path -Parent $ScriptFolder
 
-Write-Host "Diretório detectado: $PublicadorRoot"
+Write-Info "Diretório detectado: $PublicadorRoot"
 
 # Define variável opcional
 [Environment]::SetEnvironmentVariable(
@@ -35,14 +47,14 @@ if ($currentPath -notlike "*$PublicadorRoot*") {
         "User"
     )
 
-    Write-Host "PATH atualizado com sucesso."
+    Write-Info "PATH atualizado com sucesso."
 }
 else {
-    Write-Host "PATH já contém o diretório do Publicador."
+    Write-Info "PATH já contém o diretório do Publicador."
 }
 
-Write-Host "Concluído."
+Write-Info "Concluído."
 
 Write-Host ""
-Write-Host "Pressione qualquer tecla para fechar..."
+Write-Info "Pressione qualquer tecla para fechar..."
 [System.Console]::ReadKey($true) | Out-Null
