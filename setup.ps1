@@ -4,15 +4,14 @@ Write-Info "Buscando extensões permitidas pelo PATH"
 Write-Info "Extensões atuais: $env:PATHEXT"
 
 if ($env:PATHEXT -notmatch "\.PS1") {
-
+    Write-Info "Adicionando extensão .ps1"    
     $newPathext = "$env:PATHEXT;.PS1"
-
+    
     # Persiste
     [Environment]::SetEnvironmentVariable("PATHEXT", $newPathext, "User")
-
     # Atualiza sessão atual
     $env:PATHEXT = $newPathext
-
+    
     Write-Success "PATHEXT atualizado."
 }
 else {
