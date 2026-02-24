@@ -45,7 +45,7 @@ function Resolve-ScriptPath {
     }
 
     # 2️⃣ Verifica na raiz do publicador
-    $publisherPath = Join-Path $PublisherRootPath $RelativePath    
+    $publisherPath = Join-Path $PublisherRootPath "scripts" $RelativePath    
     if (Test-Path $publisherPath) {
         return (Resolve-Path $publisherPath).Path
     }
