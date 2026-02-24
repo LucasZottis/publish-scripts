@@ -1,10 +1,7 @@
 function Invoke-Script {
     param (
         [Parameter(Mandatory = $true)]
-        [pscustomobject]$ScriptConfig,
-
-        # [Parameter(Mandatory = $true)]
-        # [string]$ScriptRoot
+        [pscustomobject]$Script
     )
 
     Write-Info "Executando script: $($ScriptConfig.Name) (Tipo: $($ScriptConfig.Type))"
@@ -15,11 +12,7 @@ function Invoke-Script {
         }
 
         "ps1" {
-            $resolvedPath = Resolve-ScriptPath `
-                -RelativePath $ScriptConfig.Path `
-                -ScriptRoot $ScriptRoot
-            
-            # Write-Info "Executando arquivo .ps1 em: $resolvedPath"
+            $resolvedPath = Resolve-ScriptPath -RelativePath $ScriptConfig.Path
             $arguments = Resolve-ScriptArguments -Arguments $ScriptConfig.Arguments
 
             & $resolvedPath @arguments
@@ -42,10 +35,7 @@ function Invoke-Script {
 function Resolve-ScriptPath {
     param (
         [Parameter(Mandatory = $true)]
-        [string]$RelativePath,
-
-        [Parameter(Mandatory = $true)]
-        [string]$ScriptRoot
+        [string]$RelativePath
     )
 
     # 1️⃣ Verifica na pasta onde foi executado
@@ -55,7 +45,7 @@ function Resolve-ScriptPath {
     }
 
     # 2️⃣ Verifica na raiz do publicador
-    $publisherPath = Join-Path $ScriptRoot $RelativePath    
+    $publisherPath = Join-Path $PublisherRootPath $RelativePath    
     if (Test-Path $publisherPath) {
         return (Resolve-Path $publisherPath).Path
     }
@@ -65,7 +55,6 @@ function Resolve-ScriptPath {
         if (Test-Path $RelativePath) {
             return (Resolve-Path $RelativePath).Path
         }
-        throw "Script não encontrado (caminho absoluto): $RelativePath"
     }
 
     throw "Script não encontrado em nenhuma hierarquia: $RelativePath"
