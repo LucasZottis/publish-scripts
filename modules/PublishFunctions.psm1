@@ -99,7 +99,7 @@ function Resolve-PublishScripts {
     )
 
     foreach ($script in $Scripts) {
-        Invoke-Script -ScriptConfig $script -ScriptRoot $scriptRoot
+        Invoke-Script -Script $script
     }
 }
 
