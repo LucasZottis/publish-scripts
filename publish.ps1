@@ -1,18 +1,31 @@
 param(
-    [Parameter(Mandatory = $true)]
-    [ValidateSet("major", "minor", "patch")]
-    [string]$Bump
+    [Parameter(Mandatory = $true, Position = 0)]
+    [string]$Command,
+
+    [Parameter(Position = 1)]
+    [string]$Version
 )
 
-try {
-    
-    $Global:Bump = $Bump
-    $ErrorActionPreference = "Stop"
+Import-Module "$PSScriptRoot\modules\DevToolz.psm1" -Force
+Import-Module "$PSScriptRoot\modules\GitFunctions.psm1" -Force
+Import-Module "$PSScriptRoot\modules\PublishFunctions.psm1" -Force
 
-    # Importação de módulos
-    Import-Module "$PSScriptRoot\modules\functions.psm1" -Force
-    Import-Module "$PSScriptRoot\modules\git-functions.psm1" -Force
-    Import-Module "$PSScriptRoot\modules\publish-functions.psm1" -Force
+try {
+    # Detecta se é bump ou versão específica
+    $bumpTypes = @("major", "minor", "patch")
+
+    if ($Command -ne "latest" -and $Command -ne "tag") {
+        throw "Comando não reconhecido. Utilize publish help para obter ajuda."
+    }
+    elseif ($Command -eq "help") {
+        throw "Não está implementado ainda"
+    }
+
+    if ($Version -notin $bumpTypes -and $Version -notmatch "^\d+\.\d+\.\d+$") {
+        throw "Valor inválidode versão. Use: major, minor, patch ou uma versão válida (ex: 1.2.3)"
+    }
+
+    $global:PublisherRootPath = $PSScriptRoot
 
     # Garante que o repositório está limpo
     Test-CleanWorkingTree
@@ -20,50 +33,12 @@ try {
     # Diretório onde o usuário executou o comando
     $executionRoot = (Get-Location).Path
     Write-Info "Executando publish a partir do diretório: $executionRoot"
-
-    # Arquivo de configuração que está no diretório de execução
-    $publishSettings = Get-PublishSettings -path $executionRoot
-
-    # Obtém o branch atual
-    $currentBranch = Get-CurrentBranch 
-
-    # Troca o branch se não estiver no branch padrão
-    if ($publishSettings.DefaultBranch -ne $currentBranch) {
-        Write-Info "Trocando para a branch padrão: $($publishSettings.DefaultBranch)"
-        Switch-ToBranch -Branch $publishSettings.DefaultBranch
-    }
-
-    $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-
-    # BEFORE
-    if ($publishSettings.Scripts -and $publishSettings.Scripts.Before) {
-        foreach ($script in $publishSettings.Scripts.Before) {
-            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
-        }
-    }
-
-    foreach ($project in $publishSettings.Projects) {
-        $type = $project.Type.ToLower()
-        $scriptName = "publish-$type.ps1"
-        $scriptPath = Join-Path $PSScriptRoot "scripts" $scriptName
-
-        if (-not (Test-Path $scriptPath)) {
-            throw "Script de publicação não encontrado para o tipo '$($project.Type)': $scriptPath"
-        }
-
-        & $scriptPath -Project $project
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao publicar o projeto '$($project.Name)'."
-        }
-    }
-
-    # AFTER
-    if ($publishSettings.Scripts -and $publishSettings.Scripts.After) {
-        foreach ($script in $publishSettings.Scripts.After) {
-            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
-        }
-    }
+  
+    $arguments = @{}
+    $arguments["RepositoryPath"] = $executionRoot
+    $arguments["Version"] = $Version
+    
+    & "$PSScriptRoot\scripts\publish-$Command.ps1" @arguments
 }
 catch {
     Write-Error $_

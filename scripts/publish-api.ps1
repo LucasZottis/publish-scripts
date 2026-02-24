@@ -4,12 +4,12 @@ param(
 )
 
 try {
-    # Importação de módulos
-    Import-Module "$PSScriptRoot\..\modules\git-functions.psm1" -Force
-    Import-Module "$PSScriptRoot\..\modules\publish-functions.psm1" -Force
-    Import-Module "$PSScriptRoot\..\modules\dotnet-functions.psm1" -Force
+    # # Importação de módulos
+    # Import-Module "$PSScriptRoot\..\modules\git-functions.psm1" -Force
+    # Import-Module "$PSScriptRoot\..\modules\publish-functions.psm1" -Force
+    # Import-Module "$PSScriptRoot\..\modules\dotnet-functions.psm1" -Force
 
-    Write-Title "Iniciando publicação do projeto $($Project.Name)"
+    Write-Title "Projeto API: $($Project.Name)"
 
     # Executa testes unitários
     Start-UnitTests

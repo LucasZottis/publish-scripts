@@ -1,9 +1,9 @@
-Import-Module "$PSScriptRoot\functions.psm1" -Force
+# Import-Module "$PSScriptRoot\functions.psm1" -Force
 
 function Start-Commit {
     param(
-            [Parameter(Mandatory)]
-            [string]$NewVersion
+        [Parameter(Mandatory)]
+        [string]$NewVersion
     )
 
     git add
@@ -96,35 +96,56 @@ function Test-CleanWorkingTree {
 }
 
 # Obtém versão atual
-function Get-LastVersion {
+function Get-CurrentVersion {
 
+    # Verifica se está dentro de um repo Git
     git rev-parse --is-inside-work-tree 2>$null | Out-Null
     if ($LASTEXITCODE -ne 0) {
         throw "A pasta atual não é um repositório Git."
     }
 
+    # 🔎 1️⃣ Tenta pegar o nome do branch atual
+    $currentBranch = git branch --show-current 2>$null
+
+    # Se não houver branch (ex: detached), tenta verificar se é uma tag
+    if (-not $currentBranch) {
+
+        $exactTag = git describe --tags --exact-match 2>$null
+
+        if ($exactTag -and $exactTag -match "^v?\d+\.\d+\.\d+$") {
+            $version = $exactTag.TrimStart("v")
+            Write-Host "Executando em tag: $version" -ForegroundColor Cyan
+            return $version
+        }
+    }
+
+    # 🔁 2️⃣ Fluxo normal (pega maior versão existente)
     $tags = git tag --list
 
     if (-not $tags) {
         return "0.0.0"
     }
 
-    # remove prefixo v e ordena semanticamente
     $versions = $tags |
         Where-Object { $_ -match "^v?\d+\.\d+\.\d+$" } |
-        ForEach-Object { $_.TrimStart("v") }
+            ForEach-Object { $_.TrimStart("v") }
 
     if (-not $versions) {
         return "0.0.0"
     }
 
     $latest = $versions |
-        Sort-Object {[version]$_} -Descending |
-        Select-Object -First 1
+        Sort-Object { [version]$_ } -Descending |
+            Select-Object -First 1
 
-    Write-Host "Versão Atual: $latest" -ForegroundColor Green
-
+    Write-Success "Versão Atual: $latest"
+    
     return $latest
+}
+
+function Test-IsCurrentBranch($branch) {
+    $currentBranch = Get-CurrentBranch    
+    return $currentBranch -eq $branch
 }
 
 Export-ModuleMember -Function *

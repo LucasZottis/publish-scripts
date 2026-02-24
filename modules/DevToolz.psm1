@@ -16,7 +16,7 @@ function Write-Warn {
     Write-Host "** $Message **" -InformationAction Continue -ForegroundColor Yellow
 }
 
-function Write-Warn {
+function Write-Success {
     param(
         [Parameter(Mandatory = $true)]
         [string]$Message
