@@ -1,13 +1,14 @@
 param(
     [Parameter(Mandatory = $true)]
-    [pscustomobject]$Project
+    [pscustomobject]$Project,
+
+    [Parameter(Mandatory = $true)]
+    [string]$NewVersion
 )
 
 try {
     # # Importação de módulos
-    # Import-Module "$PSScriptRoot\..\modules\git-functions.psm1" -Force
-    # Import-Module "$PSScriptRoot\..\modules\publish-functions.psm1" -Force
-    # Import-Module "$PSScriptRoot\..\modules\dotnet-functions.psm1" -Force
+    Import-Module "$PSScriptRoot\..\modules\DotnetFunctions.psm1" -Force
 
     Write-Title "Projeto API: $($Project.Name)"
 
@@ -15,23 +16,21 @@ try {
     Start-UnitTests
 
     # Obtém última versão
-    $lastVersion = Get-LastVersion
+    # $lastVersion = Get-LastVersion
 
     # Obtém nova versão
-    $newVersion = Get-BumpedVersion -CurrentVersion $lastVersion -Bump $Global:Bump
+    # $newVersion = Get-BumpedVersion -CurrentVersion $lastVersion -Bump $Global:Bump
 
     $directory = Split-Path $Project.Path -Parent
 
     # Atualiza versão nos projetos
-    Update-VersionInProjects -NewVersion $newVersion -Path $directory
+    Update-VersionInProjects -NewVersion $NewVersion -Path $directory
 
     $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 
     # BEFORE
     if ($Project.Scripts -and $Project.Scripts.Before) {
-        foreach ($script in $Project.Scripts.Before) {
-            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
-        }
+
     }
 
     $projectPath = (Resolve-Path $Project.Path).Path
@@ -42,11 +41,11 @@ try {
     # AFTER
     if ($Project.Scripts -and $Project.Scripts.After) {
         foreach ($script in $Project.Scripts.After) {
-            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
+            Invoke-Script -ScriptConfig $script -ScriptRoot $scriptRoot
         }
     }
 
-    Write-Host "✔ $($Project.Name) publicado com sucesso!" -ForegroundColor Green
+    # Write-Host "✔ $($Project.Name) publicado com sucesso!" -ForegroundColor Green
 }
 catch {
     Write-Error $_

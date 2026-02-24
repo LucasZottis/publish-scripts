@@ -10,7 +10,7 @@ param(
 $currentVersion = Get-CurrentVersion
         
 # Chama seu método existente
-$Version = Resolve-NewVersion -CurrentVersion $currentVersion -bump $Version
+$NewVersion = Resolve-NewVersion -CurrentVersion $currentVersion -bump $Version
 
 if (-not $Version) {
     throw "Falha ao gerar nova versão."
@@ -21,7 +21,7 @@ $publishSettings = Get-PublishSettings -path "$RepositoryPath\publish.settings.j
 # Troca o branch se não estiver no branch padrão
 if (-not (Test-IsCurrentBranch -branch $publishSettings.DefaultBranch)) {
     Write-Info "Trocando para o branch: $($publishSettings.DefaultBranch)"
-    Switch-ToBranch -Branch $publishSettings.DefaultBranch
+    Switch-Branch -Branch $publishSettings.DefaultBranch
 }
 
-Resolve-Publish -PublishSettings $publishSettings
+Resolve-Publish -PublishSettings $publishSettings -NewVersion $NewVersion

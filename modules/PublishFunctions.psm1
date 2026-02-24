@@ -53,7 +53,10 @@ function Get-PublishSettings {
 function Resolve-Publish {
     param(
         [Parameter(Mandatory = $true)]
-        [pscustomobject] $PublishSettings
+        [pscustomobject] $PublishSettings,
+
+        [Parameter(Mandatory = $true)]
+        [string]$NewVersion
     )
 
     # $projectRoot = Split-Path $PSScriptRoot -Parent
@@ -75,7 +78,7 @@ function Resolve-Publish {
             throw "Script de publicação não encontrado para o tipo '$($project.Type)': $scriptPath"
         }
 
-        & $scriptPath -Project $project
+        & $scriptPath -Project $project -NewVersion $NewVersion
 
         if ($LASTEXITCODE -ne 0) {
             throw "Falha ao publicar o projeto '$($project.Name)'."
@@ -87,6 +90,16 @@ function Resolve-Publish {
         foreach ($script in $PublishSettings.Scripts.After) {
             Invoke-CustomScript -ScriptConfig $script -ScriptRoot $libPath
         }
+    }
+}
+
+function Resolve-PublishScripts {
+    param(
+        [pscustomobject[]]$Scripts
+    )
+
+    foreach ($script in $Scripts) {
+        Invoke-Script -ScriptConfig $script -ScriptRoot $scriptRoot
     }
 }
 

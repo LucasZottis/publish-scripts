@@ -3,8 +3,8 @@ function Invoke-Script {
         [Parameter(Mandatory = $true)]
         [pscustomobject]$ScriptConfig,
 
-        [Parameter(Mandatory = $true)]
-        [string]$ScriptRoot
+        # [Parameter(Mandatory = $true)]
+        # [string]$ScriptRoot
     )
 
     Write-Info "Executando script: $($ScriptConfig.Name) (Tipo: $($ScriptConfig.Type))"

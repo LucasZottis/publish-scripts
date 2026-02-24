@@ -46,23 +46,58 @@ function Start-Commit {
 }
 
 # Troca para branch especificada e dá pull
-function Switch-ToBranch {
+function Switch-Branch {
     param(
         [Parameter(Mandatory)]
         [string]$Branch
     )
 
-    git checkout $Branch
-
+    # Verifica se está dentro de um repositório git
+    git rev-parse --is-inside-work-tree > $null 2>&1
     if ($LASTEXITCODE -ne 0) {
-        throw "Falha ao trocar para a branch '$Branch'."
+        throw "O diretório atual não é um repositório Git."
     }
 
+    # Verifica se branch existe localmente
+    git show-ref --verify --quiet "refs/heads/$Branch"
+
+    if ($LASTEXITCODE -eq 0) {
+        # Existe localmente
+        git checkout $Branch
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao trocar para a branch local '$Branch'."
+        }
+    }
+    else {
+        # Descobre remote configurado
+        $remote = git remote | Select-Object -First 1
+        if (-not $remote) {
+            throw "Branch '$Branch' não existe localmente e nenhum remote está configurado."
+        }
+
+        # Atualiza referências
+        git fetch $remote > $null 2>&1
+
+        # Verifica se existe no remoto
+        git ls-remote --exit-code --heads $remote $Branch > $null 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "A branch '$Branch' não existe localmente nem no remoto '$remote'."
+        }
+
+        # Cria branch local rastreando remoto
+        git checkout -b $Branch "$remote/$Branch"
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao criar branch local a partir de '$remote/$Branch'."
+        }
+    }
+
+    # Atualiza branch (fast-forward only)
     git pull --ff-only
-    
     if ($LASTEXITCODE -ne 0) {
         throw "Falha ao atualizar a branch '$Branch'."
     }
+
+    # Write-Host "✔ Branch '$Branch' pronta e atualizada."
 }
 
 # Pega branch atual

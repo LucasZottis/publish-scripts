@@ -1,27 +1,18 @@
-param(
-    [Parameter(Mandatory = $true)]
-    [string] $RepositoryPath,
+# param(
+#     [Parameter(Mandatory = $true)]
+#     [string] $RepositoryPath,
 
-    [Parameter(Mandatory = $true)]
-    [string] $Version
-)
+#     [Parameter(Mandatory = $true)]
+#     [string] $Version
+# )
 
-# Obtém versão atual
-$currentVersion = Get-CurrentVersion
-        
-# Chama seu método existente
-# $Version = Resolve-NewVersion -CurrentVersion $currentVersion -bump $Version
+# $tag = "v$Version"
 
-if (-not $Version) {
-    throw "Falha ao gerar nova versão."
-}
+# # Troca o branch se não estiver no branch padrão
+# if (-not (Test-IsCurrentBranch -branch tag)) {
+#     Write-Info "Trocando para a tag: $tag"
+#     Switch-ToTag -Tag $tag
+# }
 
-$publishSettings = Get-PublishSettings -path "$RepositoryPath\publish.settings.json"
-
-# Troca o branch se não estiver no branch padrão
-if (-not (Test-IsCurrentBranch -branch $publishSettings.DefaultBranch)) {
-    Write-Info "Trocando para o branch: $($publishSettings.DefaultBranch)"
-    Switch-ToBranch -Branch $publishSettings.DefaultBranch
-}
-
-Resolve-Publish -PublishSettings $publishSettings
+# $publishSettings = Get-PublishSettings -path "$RepositoryPath\publish.settings.json"
+# Resolve-Publish -PublishSettings $publishSettings -Version $Version
