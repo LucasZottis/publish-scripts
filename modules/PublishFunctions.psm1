@@ -93,7 +93,7 @@ function Resolve-Publish {
     }
 }
 
-function Resolve-PublishScripts {
+function Invoke-PublishScripts {
     param(
         [pscustomobject[]]$Scripts
     )
