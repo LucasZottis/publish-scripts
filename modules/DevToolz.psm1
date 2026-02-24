@@ -4,7 +4,7 @@ function Write-Info {
         [string]$Message
     )
 
-    Write-Host "-> $Message" -InformationAction Continue -ForegroundColor Cyan
+    Write-Host "-> ℹ️ $Message" -InformationAction Continue -ForegroundColor Cyan
 }
 
 function Write-Warn {
@@ -13,7 +13,7 @@ function Write-Warn {
         [string]$Message
     )
 
-    Write-Host "** $Message **" -InformationAction Continue -ForegroundColor Yellow
+    Write-Host "** ⚠️ $Message **" -InformationAction Continue -ForegroundColor Yellow
 }
 
 function Write-Success {
@@ -22,7 +22,7 @@ function Write-Success {
         [string]$Message
     )
 
-    Write-Host "-> $Message" -InformationAction Continue -ForegroundColor Green
+    Write-Host "-> ✅ $Message" -InformationAction Continue -ForegroundColor Green
 }
 
 function Write-Title {

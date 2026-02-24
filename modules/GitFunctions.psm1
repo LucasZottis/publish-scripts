@@ -12,30 +12,41 @@ function Start-Commit {
         throw "Erro ao adicionar arquivos."
     }
 
-    Write-Host "`nAlterações de versão:"
+    Write-Info "`nAlterações de versão:"
     git --no-pager diff --cached --name-only
 
-    Write-Host ""
-    Write-Host "[C] Continuar e commitar"
-    Write-Host "[R] Reverter alterações"
-    Write-Host ""
+    Write-Info ""
+    Write-Info "[C] Continuar e commitar"
+    Write-Info "[R] Reverter alterações"
+    Write-Info ""
 
     $choice = Read-Host "Escolha (C/R)"
 
     switch ($choice.ToUpper()) {
 
         "C" {
-            git commit -m "chore: bump version to $NewVersion"
-            if ($LASTEXITCODE -ne 0) {
-                throw "Erro ao criar commit."
-            }
-            Write-Host "Commit realizado."
+            git commit -m "v$NewVersion" || throw "Erro no commit."
+            git push || throw "Erro no push."
+            git tag "v$NewVersion" || throw "Erro ao criar tag."
+            git push --tags || throw "Erro ao enviar tags."
+
+            Write-Success "Release v$NewVersion publicada com sucesso."
         }
 
         "R" {
-            git reset
-            git checkout -- *.csproj
-            Write-Host "Alterações revertidas."
+            Write-Warn "Revertendo todas as alterações..."
+    
+            git reset --hard
+            if ($LASTEXITCODE -ne 0) {
+                throw "Erro ao executar git reset --hard."
+            }
+
+            git clean -fd
+            if ($LASTEXITCODE -ne 0) {
+                throw "Erro ao executar git clean."
+            }
+
+            Write-Warn "Repositório restaurado para o último commit."
             throw "Release cancelado pelo usuário."
         }
 

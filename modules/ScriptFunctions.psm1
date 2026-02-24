@@ -1,51 +1,41 @@
 function Invoke-Script {
     param (
         [Parameter(Mandatory = $true)]
-        [pscustomobject]$ScriptConfig,
-
-        # [Parameter(Mandatory = $true)]
-        # [string]$ScriptRoot
+        [pscustomobject]$Script
     )
 
-    Write-Info "Executando script: $($ScriptConfig.Name) (Tipo: $($ScriptConfig.Type))"
+    Write-Info "Executando script: $($Script.Name) (Tipo: $($Script.Type))"
 
-    switch ($ScriptConfig.Type.ToLower()) {
+    switch ($Script.Type.ToLower()) {
         "powershell" {
-            & ([scriptblock]::Create($ScriptConfig.Command))
+            & ([scriptblock]::Create($Script.Command))
         }
 
         "ps1" {
-            $resolvedPath = Resolve-ScriptPath `
-                -RelativePath $ScriptConfig.Path `
-                -ScriptRoot $ScriptRoot
-            
             # Write-Info "Executando arquivo .ps1 em: $resolvedPath"
-            $arguments = Resolve-ScriptArguments -Arguments $ScriptConfig.Arguments
-
+            $resolvedPath = Resolve-ScriptPath -RelativePath $Script.Path
+            $arguments = Resolve-ScriptArguments -Arguments $Script.Arguments
             & $resolvedPath @arguments
         }
 
         "cmd" {
-            cmd.exe /c $ScriptConfig.Command
+            cmd.exe /c $Script.Command
         }
 
         default {
-            throw "Tipo de script inválido: $($ScriptConfig.Type)"
+            throw "Tipo de script inválido: $($Script.Type)"
         }
     }
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Erro ao executar script do tipo $($ScriptConfig.Type)"
+        throw "Erro ao executar script do tipo $($Script.Type)"
     }
 }
 
 function Resolve-ScriptPath {
     param (
         [Parameter(Mandatory = $true)]
-        [string]$RelativePath,
-
-        [Parameter(Mandatory = $true)]
-        [string]$ScriptRoot
+        [string]$RelativePath
     )
 
     # 1️⃣ Verifica na pasta onde foi executado
@@ -55,7 +45,7 @@ function Resolve-ScriptPath {
     }
 
     # 2️⃣ Verifica na raiz do publicador
-    $publisherPath = Join-Path $ScriptRoot $RelativePath    
+    $publisherPath = Join-Path $PublisherRootPath "scripts\library" $RelativePath
     if (Test-Path $publisherPath) {
         return (Resolve-Path $publisherPath).Path
     }

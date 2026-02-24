@@ -9,28 +9,18 @@ param(
 try {
     # # Importação de módulos
     Import-Module "$PSScriptRoot\..\modules\DotnetFunctions.psm1" -Force
-
     Write-Title "Projeto API: $($Project.Name)"
 
     # Executa testes unitários
     Start-UnitTests
-
-    # Obtém última versão
-    # $lastVersion = Get-LastVersion
-
-    # Obtém nova versão
-    # $newVersion = Get-BumpedVersion -CurrentVersion $lastVersion -Bump $Global:Bump
-
-    $directory = Split-Path $Project.Path -Parent
-
+    
     # Atualiza versão nos projetos
+    $directory = Split-Path $Project.Path -Parent
     Update-VersionInProjects -NewVersion $NewVersion -Path $directory
-
-    $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 
     # BEFORE
     if ($Project.Scripts -and $Project.Scripts.Before) {
-
+        Resolve-PublishScripts -Scripts $Project.Scripts.Before
     }
 
     $projectPath = (Resolve-Path $Project.Path).Path
@@ -40,9 +30,7 @@ try {
 
     # AFTER
     if ($Project.Scripts -and $Project.Scripts.After) {
-        foreach ($script in $Project.Scripts.After) {
-            Invoke-Script -ScriptConfig $script -ScriptRoot $scriptRoot
-        }
+        Resolve-PublishScripts -Scripts $Project.Scripts.After
     }
 
     # Write-Host "✔ $($Project.Name) publicado com sucesso!" -ForegroundColor Green

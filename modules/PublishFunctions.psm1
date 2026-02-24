@@ -59,14 +59,9 @@ function Resolve-Publish {
         [string]$NewVersion
     )
 
-    # $projectRoot = Split-Path $PSScriptRoot -Parent
-    $libPath = Join-Path $PublisherRootPath "scripts\lib"
-
     # BEFORE
     if ($PublishSettings.Scripts -and $PublishSettings.Scripts.Before) {
-        foreach ($script in $PublishSettings.Scripts.Before) {
-            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $libPath
-        }
+        Resolve-PublishScripts -Scripts $PublishSettings.Scripts.Before
     }
 
     foreach ($project in $PublishSettings.Projects) {
@@ -87,10 +82,10 @@ function Resolve-Publish {
 
     # AFTER
     if ($PublishSettings.Scripts -and $PublishSettings.Scripts.After) {
-        foreach ($script in $PublishSettings.Scripts.After) {
-            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $libPath
-        }
+        Resolve-PublishScripts -Scripts $PublishSettings.Scripts.After
     }
+
+    Start-Commit -NewVersion $NewVersion
 }
 
 function Resolve-PublishScripts {
