@@ -67,12 +67,12 @@ function Resolve-Publish {
     }
 
     foreach ($project in $PublishSettings.Projects) {
-        $type = $project.Type.ToLower()
-        $scriptName = "publish-$type.ps1"
+        $stack = $project.Stack.ToLower()
+        $scriptName = "\stack\publish-$stack.ps1"
         $scriptPath = Join-Path $PublisherRootPath "scripts" $scriptName
 
         if (-not (Test-Path $scriptPath)) {
-            throw "Script de publicação não encontrado para o tipo '$($project.Type)': $scriptPath"
+            throw "A stack '$($project.Stack)' ainda não tem publicação implementada"
         }
 
         & $scriptPath -Project $project -NewVersion $NewVersion
