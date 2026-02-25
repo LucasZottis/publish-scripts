@@ -6,19 +6,20 @@ function Start-Commit {
         [string]$NewVersion
     )
 
-    git add
+    git add -A
     
     if ($LASTEXITCODE -ne 0) {
         throw "Erro ao adicionar arquivos."
     }
 
-    Write-Info "`nAlterações de versão:"
+    Write-Info "Alterações de versão:"
+    Write-Host ""
     git --no-pager diff --cached --name-only
 
-    Write-Info ""
-    Write-Info "[C] Continuar e commitar"
+    Write-Host ""
+    Write-Info "[C] Commitar e criar tag v$NewVersion"
     Write-Info "[R] Reverter alterações"
-    Write-Info ""
+    Write-Host ""
 
     $choice = Read-Host "Escolha (C/R)"
 
@@ -34,19 +35,7 @@ function Start-Commit {
         }
 
         "R" {
-            Write-Warn "Revertendo todas as alterações..."
-    
-            git reset --hard
-            if ($LASTEXITCODE -ne 0) {
-                throw "Erro ao executar git reset --hard."
-            }
-
-            git clean -fd
-            if ($LASTEXITCODE -ne 0) {
-                throw "Erro ao executar git clean."
-            }
-
-            Write-Warn "Repositório restaurado para o último commit."
+            Undo-Git
             throw "Release cancelado pelo usuário."
         }
 
@@ -184,14 +173,29 @@ function Get-CurrentVersion {
         Sort-Object { [version]$_ } -Descending |
             Select-Object -First 1
 
-    Write-Success "Versão Atual: $latest"
-    
+    Write-Info "Versão Atual: $latest"
     return $latest
 }
 
 function Test-IsCurrentBranch($branch) {
     $currentBranch = Get-CurrentBranch    
     return $currentBranch -eq $branch
+}
+
+function Undo-Git {
+    Write-Warn "Revertendo todas as alterações"
+    
+    git reset --hard
+    if ($LASTEXITCODE -ne 0) {
+        throw "Erro ao executar git reset --hard."
+    }
+
+    git clean -fd
+    if ($LASTEXITCODE -ne 0) {
+        throw "Erro ao executar git clean."
+    }
+
+    Write-Warn "Repositório restaurado para o último commit."
 }
 
 Export-ModuleMember -Function *

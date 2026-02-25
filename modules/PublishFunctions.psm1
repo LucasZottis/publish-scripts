@@ -20,7 +20,7 @@ function Resolve-NewVersion {
 
     $newVersion = "$major.$minor.$patch";
 
-    Write-Success "Nova Versão: $newVersion"
+    Write-Info "Nova Versão: $newVersion"
     return $newVersion
 }
 
@@ -61,7 +61,9 @@ function Resolve-Publish {
 
     # BEFORE
     if ($PublishSettings.Scripts -and $PublishSettings.Scripts.Before) {
+        Write-Info "Iniciando execução dos scripts iniciais..."
         Resolve-PublishScripts -Scripts $PublishSettings.Scripts.Before
+        Write-Success "Scripts iniciais executados!"
     }
 
     foreach ($project in $PublishSettings.Projects) {
@@ -82,7 +84,9 @@ function Resolve-Publish {
 
     # AFTER
     if ($PublishSettings.Scripts -and $PublishSettings.Scripts.After) {
+        Write-Info "Iniciando execução dos scripts finais..."
         Resolve-PublishScripts -Scripts $PublishSettings.Scripts.After
+        Write-Success "Scripts finais executados!"
     }
 
     Start-Commit -NewVersion $NewVersion
@@ -94,7 +98,7 @@ function Resolve-PublishScripts {
     )
 
     foreach ($script in $Scripts) {
-        Invoke-Script -ScriptConfig $script -ScriptRoot $scriptRoot
+        Invoke-Script -Script $script
     }
 }
 

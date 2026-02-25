@@ -1,50 +1,44 @@
 param(
     [Parameter(Mandatory = $true)]
-    [pscustomobject]$Project
+    [pscustomobject]$Project,
+
+    [Parameter(Mandatory = $true)]
+    [string]$NewVersion
 )
 
 try {
-    # Importação de módulos
-    Import-Module "$PSScriptRoot\..\modules\git-functions.psm1" -Force
-    Import-Module "$PSScriptRoot\..\modules\publish-functions.psm1" -Force
-    Import-Module "$PSScriptRoot\..\modules\dotnet-functions.psm1" -Force
-
-    Write-Title "Iniciando publicação do projeto $($Project.Name)"
+    Write-Title "Projeto: $($Project.Name)"
 
     # Executa testes unitários
+    Write-Info "Executando testes unitários..."
     Start-UnitTests
-
-    # Obtém última versão
-    $lastVersion = Get-LastVersion
-
-    # Obtém nova versão
-    $newVersion = Get-BumpedVersion -CurrentVersion $lastVersion -Bump $Global:Bump
+    Write-Success "Testes unitários finalizados!"
 
     # Atualiza versão nos projetos
-    Update-VersionInProjects -NewVersion $newVersion
-
-    $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+    Write-Info "Atualizando versão nos projetos..."
+    $directory = Split-Path $Project.Path -Parent
+    Update-VersionInProjects -NewVersion $NewVersion -Path $directory
+    Write-Success "Projetos atualizados"
 
     # BEFORE
     if ($Project.Scripts -and $Project.Scripts.Before) {
-        foreach ($script in $Project.Scripts.Before) {
-            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
-        }
+        Write-Info "Iniciando execução dos scripts pré publicação do projeto..."
+        Resolve-PublishScripts -Scripts $Project.Scripts.Before
+        Write-Success "Scripts executados!"
     }
 
     $projectPath = (Resolve-Path $Project.Path).Path
     $outputPath = [System.IO.Path]::GetFullPath($Project.PublishPath)
-
     Start-BlazorPublish -ProjectPath $projectPath -OutputPath $outputPath
 
     # AFTER
-    if ($project.Scripts -and $Project.Scripts.After) {
-        foreach ($script in $Project.Scripts.After) {
-            Invoke-CustomScript -ScriptConfig $script -ScriptRoot $scriptRoot
-        }
+    if ($Project.Scripts -and $Project.Scripts.After) {
+        Write-Info "Iniciando execução dos scripts pós publicação do projeto..."
+        Resolve-PublishScripts -Scripts $Project.Scripts.After
+        Write-Success "Scripts executados!"
     }
 
-    Write-Host "✔ $($Project.Name) publicado com sucesso!"
+    Write-Success "Publicação de ""$($Project.Name)"" finalizado!"
 }
 catch {
     Write-Error $_

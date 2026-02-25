@@ -1,5 +1,3 @@
-Import-Module "$PSScriptRoot\functions.psm1" -Force
-
 function Update-VersionInProjects {
     param(
         [Parameter(Mandatory)]
@@ -18,11 +16,11 @@ function Update-VersionInProjects {
             Where-Object { $_.FullName -notmatch '\btest(s)?\b' }
     }
 
-    foreach ($proj in $projects) {
+    foreach ($project in $projects) {
 
         # Write-Host "Atualizando versão em $($proj.Name)..."
-
-        [xml]$xml = Get-Content $proj.FullName
+        Write-Info "Atualizando versão de ""$($project.Name)"""
+        [xml]$xml = Get-Content $project.FullName
 
         $propertyGroup = $xml.Project.PropertyGroup |
             Where-Object { $_.Version } |
@@ -45,18 +43,17 @@ function Update-VersionInProjects {
         #     $pg.AppendChild($versionNode) | Out-Null
         # }
 
-        $xml.Save($proj.FullName)
+        $xml.Save($project.FullName)
     }
 }
 
 # Executa testes unitários
 function Start-UnitTests {
-
-    Write-Host "Executando testes unitários..." -ForegroundColor Green
-
-    dotnet test --configuration Release --verbosity minimal
+    $output = dotnet test --configuration Release --verbosity minimal
 
     if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Falha no teste"
+        Write-Host $output
         throw "Testes unitários falharam. Release abortado."
     }
 }
@@ -68,8 +65,6 @@ function Start-ApiPublish {
 
         [Parameter(Mandatory)]
         [string]$OutputPath
-
-        # [string]$Configuration = "Release"
     )
 
     Write-Info "Executando dotnet publish"

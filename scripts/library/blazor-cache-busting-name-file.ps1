@@ -6,28 +6,11 @@ Param(
     # [switch]$DryRun
 )
 
-function Write-Log { param($m) Write-Host "[AddHash] $m" }
-
-# # Se FolderPath não foi fornecido ou veio corrompido, tenta a variável de ambiente
-# if (-not $FolderPath -or $FolderPath.Trim() -eq "") {
-#     if ($env:PUBLISH_DIR) {
-#         $FolderPath = $env:PUBLISH_DIR
-#         Write-Log ("Usando PUBLISH_DIR da env: {0}" -f $FolderPath)
-#     }
-# }
-
-# # Sanitiza e remove aspas, pontos e barras finais
-# if ($FolderPath) {
-#     $FolderPath = $FolderPath.Trim('"', ' ', '\', '.')
-# }
-# else {
-#     Write-Error "FolderPath não informado (parâmetro e env PUBLISH_DIR vazios)."
-#     exit 1
-# }
+function Write-Log { param($m) Write-Info "[AddHash] $m" }
 
 try {
     # $FolderPath = (Resolve-Path $FolderPath).ProviderPath
-    $FolderPath =[System.IO.Path]::GetFullPath($FolderPath)
+    $FolderPath = [System.IO.Path]::GetFullPath($FolderPath)
 }
 catch {
     Write-Error ("FolderPath inválido ou não encontrado: {0}" -f $FolderPath)

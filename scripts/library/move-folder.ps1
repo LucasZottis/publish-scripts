@@ -6,27 +6,13 @@ param(
     [string]$DestinationFolder
 )
 
-# try {
-#     if (-not (Test-Path $SourceFolder)) {
-#         throw "Pasta de origem não encontrada: $SourceFolder"
-#     }
+$output = robocopy $SourceFolder $DestinationFolder /MIR /MT:16 /R:2 /W:2
+# robocopy $SourceFolder $DestinationFolder /MIR /MT:16 /R:2 /W:2
 
-#     if (-not (Test-Path $DestinationFolder)) {
-#         Write-Host "Pasta de destino não encontrada. Criando: $DestinationFolder" -ForegroundColor Yellow
-#         New-Item -ItemType Directory -Path $DestinationFolder | Out-Null
-#     }
-
-#     Write-Host "Movendo arquivos de '$SourceFolder' para '$DestinationFolder'..." -ForegroundColor Green
-#     Move-Item -Path "$SourceFolder\*" -Destination $DestinationFolder -Force
-
-#     Write-Host "✔ Pasta movida com sucesso!" -ForegroundColor Green
-# }
-# catch {
-#     Write-Error $_
-#     exit 1
-# }
-
-robocopy $SourceFolder $DestinationFolder /MIR /MT:16 /R:2 /W:2
-if ($LASTEXITCODE -gt 8) {
-    throw "Erro no robocopy."
+if ($LASTEXITCODE -ge 8) {
+    Write-Host $output
+    throw "❌ Erro no robocopy"
 }
+
+$global:LASTEXITCODE = 0
+exit 0

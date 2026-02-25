@@ -43,6 +43,7 @@ try {
 }
 catch {
     Write-Error $_
+    Undo-Git
     exit 1
 }
 finally {

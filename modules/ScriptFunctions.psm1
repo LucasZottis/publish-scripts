@@ -4,7 +4,7 @@ function Invoke-Script {
         [pscustomobject]$Script
     )
 
-    Write-Info "Executando script: $($Script.Name) (Tipo: $($Script.Type))"
+    Write-Info "Executando script: $($Script.Name)"
 
     switch ($Script.Type.ToLower()) {
         "powershell" {
@@ -28,8 +28,10 @@ function Invoke-Script {
     }
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Erro ao executar script do tipo $($Script.Type)"
+        throw "Erro ao executar script ""$($Script.Name)"""
     }
+
+    Write-Success "Script ""$($Script.Name)"" executado!"
 }
 
 function Resolve-ScriptPath {

@@ -3,7 +3,7 @@ param(
     [string]$FolderPath
 )
 
-Import-Module "$PSScriptRoot\..\modules\functions.psm1" -Force
+# Import-Module "$PSScriptRoot\..\modules\functions.psm1" -Force
 
 # Converte para caminho absoluto sem exigir existência
 $fullPath = [System.IO.Path]::GetFullPath($FolderPath)
