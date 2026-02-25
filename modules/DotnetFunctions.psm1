@@ -2,8 +2,6 @@ function Update-VersionInProjects {
     param(
         [Parameter(Mandatory)]
         [string]$NewVersion,
-
-        # [string]$Path = (Get-Location).Path
         [string]$Path
     )
 
@@ -58,18 +56,19 @@ function Start-UnitTests {
     }
 }
 
-function Start-ApiPublish {
+function Start-Publish {
     param(
         [Parameter(Mandatory)]
         [string]$ProjectPath,
 
         [Parameter(Mandatory)]
-        [string]$OutputPath
+        [string]$OutputPath,
+
+        $Arguments
     )
 
     Write-Info "Executando dotnet publish"
-
-    $output = & dotnet publish $ProjectPath -c Release -o $OutputPath -v q 2>&1
+    $output = & dotnet publish $ProjectPath -c Release -o $OutputPath @arguments
 
     if ($LASTEXITCODE -ne 0) {
         Write-Error "❌ Falha no publish:" 
@@ -89,11 +88,8 @@ function Start-BlazorPublish {
 
     Write-Info "Projeto: $projectPath"
     Write-Info "Saída: $outputPath"
-    Write-Info "Executando dotnet publish"
-
-    
+    Write-Info "Executando dotnet publish"    
     $output = & dotnet publish $ProjectPath -c Release -o $OutputPath -p:PublishTrimmed=true -v q 2>&1
-
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "❌ Falha no publish:"
