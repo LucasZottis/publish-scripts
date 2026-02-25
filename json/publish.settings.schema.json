@@ -41,9 +41,14 @@
           "type": "string",
           "minLength": 1
         },
-        "Type": {
+        "Stack": {
           "type": "string",
-          "enum": ["API", "Blazor", "Angular", "Nuget", "Console"]
+          "enum": ["dotnet", "angular"]
+        },
+        "Arguments": {
+          "type": "object",
+          "description": "Dynamic stack options resolved at runtime",
+          "additionalProperties": true
         },
         "Scripts": {
           "$ref": "#/definitions/projectScripts"
