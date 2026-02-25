@@ -72,7 +72,7 @@ function Start-ApiPublish {
     $output = & dotnet publish $ProjectPath -c Release -o $OutputPath -v q 2>&1
 
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Falha no publish:"
+        Write-Error "❌ Falha no publish:" 
         Write-Host $output
         exit 1
     }
