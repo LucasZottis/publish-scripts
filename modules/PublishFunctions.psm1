@@ -102,4 +102,50 @@ function Resolve-PublishScripts {
     }
 }
 
+function Resolve-Arguments {
+    param (
+        [Parameter(Mandatory = $true)]
+        $Arguments
+    )
+
+    # Sem argumentos
+    if (-not $Arguments) {
+        return @{}
+    }
+
+    # Se vier como PSCustomObject (JSON padrão)
+    if ($Arguments -is [pscustomobject]) {
+
+        $hashtable = @{}
+
+        foreach ($prop in $Arguments.PSObject.Properties) {
+
+            if ([string]::IsNullOrWhiteSpace($prop.Name)) {
+                throw "Argumento com nome inválido."
+            }
+
+            $hashtable[$prop.Name] = $prop.Value
+        }
+
+        return $hashtable
+    }
+
+    # Se já for hashtable
+    if ($Arguments -is [hashtable]) {
+        return $Arguments
+    }
+
+    # Se for array → rejeita (evita parâmetro posicional)
+    if ($Arguments -is [array]) {
+        throw "Arguments não pode ser array. Use objeto nomeado."
+    }
+
+    # Se for string → rejeita
+    if ($Arguments -is [string]) {
+        throw "Arguments não pode ser string. Use objeto nomeado."
+    }
+
+    throw "Formato inválido para Arguments."
+}
+
 Export-ModuleMember -Function *
