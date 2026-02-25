@@ -77,25 +77,25 @@ function Start-Publish {
     }
 }
 
-function Start-BlazorPublish {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$ProjectPath,
-    
-        [Parameter(Mandatory = $true)]
-        [string]$OutputPath
-    )
-
-    Write-Info "Projeto: $projectPath"
-    Write-Info "Saída: $outputPath"
-    Write-Info "Executando dotnet publish"    
-    $output = & dotnet publish $ProjectPath -c Release -o $OutputPath -p:PublishTrimmed=true -v q 2>&1
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Falha no publish:"
-        Write-Host $output
-        exit 1
-    }
-}
+#function Start-BlazorPublish {
+#    param(
+#        [Parameter(Mandatory = $true)]
+#        [string]$ProjectPath,
+#    
+#        [Parameter(Mandatory = $true)]
+#        [string]$OutputPath
+#    )
+#
+#    Write-Info "Projeto: $projectPath"
+#    Write-Info "Saída: $outputPath"
+#    Write-Info "Executando dotnet publish"    
+#    $output = & dotnet publish $ProjectPath -c Release -o $OutputPath -p:PublishTrimmed=true -v q 2>&1
+#
+#    if ($LASTEXITCODE -ne 0) {
+#        Write-Host "❌ Falha no publish:"
+#        Write-Host $output
+#        exit 1
+#    }
+#}
 
 Export-ModuleMember -Function *
