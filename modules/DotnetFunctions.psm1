@@ -17,7 +17,7 @@ function Update-VersionInProjects {
     foreach ($project in $projects) {
 
         # Write-Host "Atualizando versão em $($proj.Name)..."
-        Write-Info "Atualizando versão de ""$($project.Name)"""
+        Write-Log "Atualizando versão de ""$($project.Name)"""
         [xml]$xml = Get-Content $project.FullName
 
         $propertyGroup = $xml.Project.PropertyGroup |
@@ -67,7 +67,7 @@ function Start-Publish {
         $Arguments
     )
 
-    Write-Info "Executando dotnet publish"
+    Write-Log "Executando dotnet publish"
     $output = & dotnet publish $ProjectPath -c Release -o $OutputPath @arguments
 
     if ($LASTEXITCODE -ne 0) {
@@ -76,26 +76,5 @@ function Start-Publish {
         exit 1
     }
 }
-
-#function Start-BlazorPublish {
-#    param(
-#        [Parameter(Mandatory = $true)]
-#        [string]$ProjectPath,
-#    
-#        [Parameter(Mandatory = $true)]
-#        [string]$OutputPath
-#    )
-#
-#    Write-Info "Projeto: $projectPath"
-#    Write-Info "Saída: $outputPath"
-#    Write-Info "Executando dotnet publish"    
-#    $output = & dotnet publish $ProjectPath -c Release -o $OutputPath -p:PublishTrimmed=true -v q 2>&1
-#
-#    if ($LASTEXITCODE -ne 0) {
-#        Write-Host "❌ Falha no publish:"
-#        Write-Host $output
-#        exit 1
-#    }
-#}
 
 Export-ModuleMember -Function *

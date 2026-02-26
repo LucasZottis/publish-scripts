@@ -12,6 +12,8 @@ Import-Module "$PSScriptRoot\modules\PublishFunctions.psm1" -Force
 Import-Module "$PSScriptRoot\modules\ScriptFunctions.psm1" -Force
 
 try {
+    Clear-Host
+
     # Detecta se é bump ou versão específica
     $bumpTypes = @("major", "minor", "patch")
 
@@ -33,7 +35,7 @@ try {
 
     # Diretório onde o usuário executou o comando
     $executionRoot = (Get-Location).Path
-    Write-Info "Executando publish a partir do diretório: $executionRoot"
+    Write-Log "Executando publish a partir do diretório: $executionRoot"
   
     $arguments = @{}
     $arguments["RepositoryPath"] = $executionRoot

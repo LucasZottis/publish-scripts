@@ -4,7 +4,7 @@ function Invoke-Script {
         [pscustomobject]$Script
     )
 
-    Write-Info "Executando script: $($Script.Name)"
+    Write-Log "Executando script: $($Script.Name)"
 
     switch ($Script.Type.ToLower()) {
         "powershell" {

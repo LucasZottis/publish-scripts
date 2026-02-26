@@ -30,7 +30,7 @@ function Get-PublishSettings {
     )
 
     # $pathPublishSettings = "$Path\publish.settings.json"
-    Write-Info "Configurações de publicação serão carregadas do arquivo: $Path"
+    Write-Log "Configurações de publicação serão carregadas do arquivo: $Path"
 
     if (-not (Test-Path $Path)) {
         throw "Arquivo de publicação não existe"
@@ -61,15 +61,15 @@ function Resolve-Publish {
 
     # BEFORE
     if ($PublishSettings.Scripts -and $PublishSettings.Scripts.Before) {
-        Write-Info "Iniciando execução dos scripts iniciais..."
+        Write-Log "Iniciando execução dos scripts iniciais..."
         Resolve-PublishScripts -Scripts $PublishSettings.Scripts.Before
         Write-Success "Scripts iniciais executados!"
     }
 
     foreach ($project in $PublishSettings.Projects) {
         $stack = $project.Stack.ToLower()
-        $scriptName = "\stack\publish-$stack.ps1"
-        $scriptPath = Join-Path $PublisherRootPath "scripts" $scriptName
+        $scriptName = "publish-$stack.ps1"
+        $scriptPath = Join-Path $PublisherRootPath "scripts\stack" $scriptName
 
         if (-not (Test-Path $scriptPath)) {
             throw "A stack '$($project.Stack)' ainda não tem publicação implementada"
@@ -84,7 +84,7 @@ function Resolve-Publish {
 
     # AFTER
     if ($PublishSettings.Scripts -and $PublishSettings.Scripts.After) {
-        Write-Info "Iniciando execução dos scripts finais..."
+        Write-Log "Iniciando execução dos scripts finais..."
         Resolve-PublishScripts -Scripts $PublishSettings.Scripts.After
         Write-Success "Scripts finais executados!"
     }

@@ -12,13 +12,12 @@ function Start-Commit {
         throw "Erro ao adicionar arquivos."
     }
 
-    Write-Info "Alterações de versão:"
-    Write-Host ""
+    Write-Log "Alterações de versão:"
     git --no-pager diff --cached --name-only
 
     Write-Host ""
-    Write-Info "[C] Commitar e criar tag v$NewVersion"
-    Write-Info "[R] Reverter alterações"
+    Write-Log "[C] Commitar e criar tag v$NewVersion"
+    Write-Log "[R] Reverter alterações"
     Write-Host ""
 
     $choice = Read-Host "Escolha (C/R)"
@@ -121,7 +120,7 @@ function Get-CurrentBranch {
 
 # Garante que o repositório está limpo
 function Test-CleanWorkingTree {
-    Write-Info "Verificando se o repositório está limpo"
+    Write-Log "Verificando se o repositório está limpo"
 
     $status = git status --porcelain
 
@@ -149,29 +148,28 @@ function Get-CurrentVersion {
 
         if ($exactTag -and $exactTag -match "^v?\d+\.\d+\.\d+$") {
             $version = $exactTag.TrimStart("v")
-            Write-Host "Executando em tag: $version" -ForegroundColor Cyan
+            Write-Log "Executando em tag: $version" -ForegroundColor Cyan
             return $version
         }
     }
 
     # 🔁 2️⃣ Fluxo normal (pega maior versão existente)
     $tags = git tag --list
+    $latest = "0.0.0"
 
     if (-not $tags) {
-        return "0.0.0"
+        Write-Info "Versão Atual: $latest"
+        return $latest
     }
-
-    $versions = $tags |
-        Where-Object { $_ -match "^v?\d+\.\d+\.\d+$" } |
-            ForEach-Object { $_.TrimStart("v") }
+    
+    $versions = $tags | Where-Object { $_ -match "^v?\d+\.\d+\.\d+$" } | ForEach-Object { $_.TrimStart("v") }
 
     if (-not $versions) {
-        return "0.0.0"
+        Write-Info "Versão Atual: $latest"
+        return $latest
     }
 
-    $latest = $versions |
-        Sort-Object { [version]$_ } -Descending |
-            Select-Object -First 1
+    $latest = $versions | Sort-Object { [version]$_ } -Descending | Select-Object -First 1
 
     Write-Info "Versão Atual: $latest"
     return $latest
