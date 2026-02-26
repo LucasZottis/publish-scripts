@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/LucasZottis/publish-scripts/v1.1.0/json/publish.settings.schema.json",
+  "$schema": "https://raw.githubusercontent.com/LucasZottis/publish-scripts/v1.2.0/json/publish.settings.schema.json",
   "DefaultBranch": "",
   "Projects": [
     {
@@ -7,8 +7,7 @@
       "PublishPath": "",
       "Stack": "",
       "Name": "",
-      "Arguments": {
-      },
+      "Arguments": {},
       "Scripts": {
         "Before": [
           {
