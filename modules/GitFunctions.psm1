@@ -27,15 +27,13 @@ function Start-Commit {
         "C" {
             git commit -m "v$NewVersion" || throw "Erro no commit."
             git push || throw "Erro no push."
-            git tag "v$NewVersion" || throw "Erro ao criar tag."
-            git push --tags || throw "Erro ao enviar tags."
-
+            New-Tag -NewVersion $NewVersion
             Write-Success "Release v$NewVersion publicada com sucesso."
         }
 
         "R" {
             Undo-Git
-            throw "Release cancelado pelo usuário."
+            Write-Info "Release cancelado pelo usuário."
         }
 
         default {
@@ -181,7 +179,7 @@ function Test-IsCurrentBranch($branch) {
 }
 
 function Undo-Git {
-    Write-Warn "Revertendo todas as alterações"
+    Write-Log "Revertendo todas as alterações"
     
     git reset --hard
     if ($LASTEXITCODE -ne 0) {
@@ -193,7 +191,12 @@ function Undo-Git {
         throw "Erro ao executar git clean."
     }
 
-    Write-Warn "Repositório restaurado para o último commit."
+    Write-Log "Repositório restaurado para o último commit."
+}
+
+function New-Tag($NewVersion) {
+    git tag "v$NewVersion" || throw "Erro ao criar tag."
+    git push --tags || throw "Erro ao enviar tags."
 }
 
 Export-ModuleMember -Function *

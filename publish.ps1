@@ -7,6 +7,7 @@ param(
 )
 
 Import-Module "$PSScriptRoot\modules\DevToolz.psm1" -Force
+Import-Module "$PSScriptRoot\modules\WriteFunctions.psm1" -Force
 Import-Module "$PSScriptRoot\modules\GitFunctions.psm1" -Force
 Import-Module "$PSScriptRoot\modules\PublishFunctions.psm1" -Force
 Import-Module "$PSScriptRoot\modules\ScriptFunctions.psm1" -Force
