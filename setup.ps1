@@ -1,59 +1,83 @@
-Import-Module ".\modules\functions.psm1"
+Import-Module ".\modules\WriteFunctions.psm1"
 
-Write-Info "Buscando extensões permitidas pelo PATH"
-Write-Info "Extensões atuais: $env:PATHEXT"
-
-if ($env:PATHEXT -notmatch "\.PS1") {
-    Write-Info "Adicionando extensão .ps1"    
+function Set-PathExtPS1 {
+    Write-Log "Adicionando extensão .ps1"    
     $newPathext = "$env:PATHEXT;.PS1"
     
     # Persiste
     [Environment]::SetEnvironmentVariable("PATHEXT", $newPathext, "User")
+    
     # Atualiza sessão atual
     $env:PATHEXT = $newPathext
     
     Write-Success "PATHEXT atualizado."
 }
-else {
-    Write-Info ".PS1 já está no PATHEXT."
+
+function Confirm-PathExtPS1 {
+    if ($env:PATHEXT -notmatch "\.PS1") {
+        Set-PathExtPS1
+    }
+    else {
+        Write-Info ".PS1 já está no PATHEXT."
+    }
 }
 
-# Pasta onde o script está
-$ScriptFolder = Split-Path -Parent $MyInvocation.MyCommand.Path
+function Confirm-PathExt($PublisherRoot) {
+    # Atualiza PATH do usuário
+    $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    
+    if ($currentPath -notlike "*$PublisherRoot*") {
+        return $false
+    }
 
-# Sobe um nível (onde está o Publicador.cmd)
-$PublicadorRoot = Split-Path -Parent $ScriptFolder
+    Write-Info "PATH já contém o diretório do Publicador."
+    return $true
+}
 
-Write-Info "Diretório detectado: $PublicadorRoot"
-
-# Define variável opcional
-[Environment]::SetEnvironmentVariable(
-    "PUBLICADOR_ROOT",
-    $PublicadorRoot,
-    "User"
-)
-
-# Atualiza PATH do usuário
-$currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
-
-if ($currentPath -notlike "*$PublicadorRoot*") {
-
-    $newPath = "$currentPath;$PublicadorRoot"
-
+function Set-PathExt {
+    # Pasta onde o script está
+    $publisherRoot = Split-Path -Parent $MyInvocation.MyCommand.Path 
+    Write-Info "Diretório detectado: $publisherRoot"
+    
+    if (Confirm-PathExt -PublisherRoot $publisherRoot) {
+        return
+    }
+    
+    # Define variável opcional
     [Environment]::SetEnvironmentVariable(
         "Path",
-        $newPath,
+        $publisherRoot,
         "User"
     )
 
     Write-Info "PATH atualizado com sucesso."
-}
-else {
-    Write-Info "PATH já contém o diretório do Publicador."
+    
+    #if ($currentPath -notlike "*$PublicadorRoot*") {
+    #
+    #    $newPath = "$currentPath;$PublicadorRoot"
+   # 
+   #     [Environment]::SetEnvironmentVariable(
+    #        "Path",
+     #       $newPath,
+     #      "User"
+     #   )
+   # 
+        
+    #}
+    #else {
+    #}
 }
 
-Write-Info "Concluído."
-
-Write-Host ""
-Write-Info "Pressione qualquer tecla para fechar..."
-[System.Console]::ReadKey($true) | Out-Null
+function Start-Setup {
+    Write-Log "Buscando extensões permitidas pelo PATH"
+    Write-Log "Extensões atuais: $env:PATHEXT"
+    
+    Confirm-PathExtPS1
+    Set-PathExt
+    
+    Write-Success "Concluído."
+    
+    Write-Host ""
+    Write-Log "Pressione qualquer tecla para fechar..."
+    [System.Console]::ReadKey($true) | Out-Null
+}
