@@ -30,7 +30,7 @@ function Get-PublishSettings {
     )
 
     # $pathPublishSettings = "$Path\publish.settings.json"
-    Write-Info "Configurações de publicação serão carregadas do arquivo: $Path"
+    Write-Log "Configurações de publicação serão carregadas do arquivo: $Path"
 
     if (-not (Test-Path $Path)) {
         throw "Arquivo de publicação não existe"
@@ -61,18 +61,18 @@ function Resolve-Publish {
 
     # BEFORE
     if ($PublishSettings.Scripts -and $PublishSettings.Scripts.Before) {
-        Write-Info "Iniciando execução dos scripts iniciais..."
+        Write-Log "Iniciando execução dos scripts iniciais..."
         Resolve-PublishScripts -Scripts $PublishSettings.Scripts.Before
         Write-Success "Scripts iniciais executados!"
     }
 
     foreach ($project in $PublishSettings.Projects) {
-        $type = $project.Type.ToLower()
-        $scriptName = "publish-$type.ps1"
-        $scriptPath = Join-Path $PublisherRootPath "scripts" $scriptName
+        $stack = $project.Stack.ToLower()
+        $scriptName = "publish-$stack.ps1"
+        $scriptPath = Join-Path $PublisherRootPath "scripts\stack" $scriptName
 
         if (-not (Test-Path $scriptPath)) {
-            throw "Script de publicação não encontrado para o tipo '$($project.Type)': $scriptPath"
+            throw "A stack '$($project.Stack)' ainda não tem publicação implementada"
         }
 
         & $scriptPath -Project $project -NewVersion $NewVersion
@@ -84,7 +84,7 @@ function Resolve-Publish {
 
     # AFTER
     if ($PublishSettings.Scripts -and $PublishSettings.Scripts.After) {
-        Write-Info "Iniciando execução dos scripts finais..."
+        Write-Log "Iniciando execução dos scripts finais..."
         Resolve-PublishScripts -Scripts $PublishSettings.Scripts.After
         Write-Success "Scripts finais executados!"
     }
@@ -100,6 +100,52 @@ function Resolve-PublishScripts {
     foreach ($script in $Scripts) {
         Invoke-Script -Script $script
     }
+}
+
+function Resolve-Arguments {
+    param (
+        [Parameter(Mandatory = $true)]
+        $Arguments
+    )
+
+    # Sem argumentos
+    if (-not $Arguments) {
+        return @{}
+    }
+
+    # Se vier como PSCustomObject (JSON padrão)
+    if ($Arguments -is [pscustomobject]) {
+
+        $hashtable = @{}
+
+        foreach ($prop in $Arguments.PSObject.Properties) {
+
+            if ([string]::IsNullOrWhiteSpace($prop.Name)) {
+                throw "Argumento com nome inválido."
+            }
+
+            $hashtable[$prop.Name] = $prop.Value
+        }
+
+        return $hashtable
+    }
+
+    # Se já for hashtable
+    if ($Arguments -is [hashtable]) {
+        return $Arguments
+    }
+
+    # Se for array → rejeita (evita parâmetro posicional)
+    if ($Arguments -is [array]) {
+        throw "Arguments não pode ser array. Use objeto nomeado."
+    }
+
+    # Se for string → rejeita
+    if ($Arguments -is [string]) {
+        throw "Arguments não pode ser string. Use objeto nomeado."
+    }
+
+    throw "Formato inválido para Arguments."
 }
 
 Export-ModuleMember -Function *

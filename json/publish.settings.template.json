@@ -5,8 +5,10 @@
     {
       "Path": "",
       "PublishPath": "",
-      "Type": "",
+      "Stack": "",
       "Name": "",
+      "Arguments": {
+      },
       "Scripts": {
         "Before": [
           {

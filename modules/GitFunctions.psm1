@@ -12,13 +12,12 @@ function Start-Commit {
         throw "Erro ao adicionar arquivos."
     }
 
-    Write-Info "Alterações de versão:"
-    Write-Host ""
+    Write-Log "Alterações de versão:"
     git --no-pager diff --cached --name-only
 
     Write-Host ""
-    Write-Info "[C] Commitar e criar tag v$NewVersion"
-    Write-Info "[R] Reverter alterações"
+    Write-Log "[C] Commitar e criar tag v$NewVersion"
+    Write-Log "[R] Reverter alterações"
     Write-Host ""
 
     $choice = Read-Host "Escolha (C/R)"
@@ -28,15 +27,13 @@ function Start-Commit {
         "C" {
             git commit -m "v$NewVersion" || throw "Erro no commit."
             git push || throw "Erro no push."
-            git tag "v$NewVersion" || throw "Erro ao criar tag."
-            git push --tags || throw "Erro ao enviar tags."
-
+            New-Tag -NewVersion $NewVersion
             Write-Success "Release v$NewVersion publicada com sucesso."
         }
 
         "R" {
             Undo-Git
-            throw "Release cancelado pelo usuário."
+            Write-Info "Release cancelado pelo usuário."
         }
 
         default {
@@ -121,7 +118,7 @@ function Get-CurrentBranch {
 
 # Garante que o repositório está limpo
 function Test-CleanWorkingTree {
-    Write-Info "Verificando se o repositório está limpo"
+    Write-Log "Verificando se o repositório está limpo"
 
     $status = git status --porcelain
 
@@ -149,29 +146,28 @@ function Get-CurrentVersion {
 
         if ($exactTag -and $exactTag -match "^v?\d+\.\d+\.\d+$") {
             $version = $exactTag.TrimStart("v")
-            Write-Host "Executando em tag: $version" -ForegroundColor Cyan
+            Write-Log "Executando em tag: $version" -ForegroundColor Cyan
             return $version
         }
     }
 
     # 🔁 2️⃣ Fluxo normal (pega maior versão existente)
     $tags = git tag --list
+    $latest = "0.0.0"
 
     if (-not $tags) {
-        return "0.0.0"
+        Write-Info "Versão Atual: $latest"
+        return $latest
     }
-
-    $versions = $tags |
-        Where-Object { $_ -match "^v?\d+\.\d+\.\d+$" } |
-            ForEach-Object { $_.TrimStart("v") }
+    
+    $versions = $tags | Where-Object { $_ -match "^v?\d+\.\d+\.\d+$" } | ForEach-Object { $_.TrimStart("v") }
 
     if (-not $versions) {
-        return "0.0.0"
+        Write-Info "Versão Atual: $latest"
+        return $latest
     }
 
-    $latest = $versions |
-        Sort-Object { [version]$_ } -Descending |
-            Select-Object -First 1
+    $latest = $versions | Sort-Object { [version]$_ } -Descending | Select-Object -First 1
 
     Write-Info "Versão Atual: $latest"
     return $latest
@@ -183,7 +179,7 @@ function Test-IsCurrentBranch($branch) {
 }
 
 function Undo-Git {
-    Write-Warn "Revertendo todas as alterações"
+    Write-Log "Revertendo todas as alterações"
     
     git reset --hard
     if ($LASTEXITCODE -ne 0) {
@@ -195,7 +191,12 @@ function Undo-Git {
         throw "Erro ao executar git clean."
     }
 
-    Write-Warn "Repositório restaurado para o último commit."
+    Write-Log "Repositório restaurado para o último commit."
+}
+
+function New-Tag($NewVersion) {
+    git tag "v$NewVersion" || throw "Erro ao criar tag."
+    git push --tags || throw "Erro ao enviar tags."
 }
 
 Export-ModuleMember -Function *
