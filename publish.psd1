@@ -1,5 +1,5 @@
 @{
     Nome     = "Publisher"
-    Versao   = "1.1.0"
+    Versao   = "1.2.0"
     Ambiente = "Prod"
 }
